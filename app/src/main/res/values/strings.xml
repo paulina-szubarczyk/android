@@ -16,5 +16,6 @@
     <string name="camera_button">Camera</string>
     <string name="therm_camera_button">Therm Camera</string>
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_therm_data">ThermDataActivity</string>
 
 </resources>

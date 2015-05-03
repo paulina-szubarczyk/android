@@ -16,4 +16,6 @@
         android:text="@string/therm_camera_button"
         android:onClick="startThermCamera" />
 
+
+
 </LinearLayout>

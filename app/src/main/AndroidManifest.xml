@@ -14,7 +14,8 @@
     <uses-permission android:name="android.permission.READ_PROFILE" />
 
     <uses-feature
-        android:name="android.hardware.camera" android:required="false" />
+        android:name="android.hardware.camera"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -53,22 +54,27 @@
             <!-- </intent-filter> -->
 
         </activity>
-
         <activity
             android:name=".ThermAppActivity"
             android:label="@string/title_activity_therm_app"
             android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:value="com.example.paulina.myapplication.MainActivity"
+                android:resource="@xml/device_filter" />
 
+
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" /> -->
+            <!-- </intent-filter> -->
+        </activity>
+        <activity
+            android:name=".ThermDataActivity"
+            android:label="@string/title_activity_therm_data"
+            android:parentActivityName=".ThermAppActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.paulina.myapplication.MainActivity" />
-            <!--<meta-data-->
-                <!--android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"-->
-                <!--android:resource="@xml/device_filter" />-->
-
-            <!--<intent-filter>-->
-                <!--<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />-->
-            <!--</intent-filter>-->
+                android:value="com.example.paulina.myapplication.ThermAppActivity" />
         </activity>
     </application>
 
