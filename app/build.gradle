@@ -10,6 +10,7 @@ android {
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -24,4 +25,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile files('libs/thermappsdk.jar')
     compile files('libs/armeabi.jar')
+    androidTestCompile 'junit:junit:4.11'
+    androidTestCompile('com.android.support.test:testing-support-lib:0.1') {
+        exclude group: 'junit'  // junit:junit-dep conflicts with junit:unit
+    }
 }
