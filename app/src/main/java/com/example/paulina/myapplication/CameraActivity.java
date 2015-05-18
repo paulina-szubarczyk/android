@@ -1,59 +1,86 @@
 package com.example.paulina.myapplication;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
 
 
-public class CameraActivity extends ActionBarActivity {
+public class CameraActivity  {
 
     private Camera mCamera;
     private CameraPreview mPrieview;
+    private MainActivity mainActivity;
+    private MenuItem mItem;
+    private boolean camera_available = false;
+    private boolean on = false;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_camera);
+    public boolean isOn() {
+        return on;
+    }
 
-        if(checkCameraHardware(this)) {
+    public void setOn(boolean on) {
+        if(on && camera_available) {
+            this.on = true;
+            if(mItem != null)
+                mItem.setIcon(R.drawable.close_camera);
+        } else {
+            this.on = false;
+            if(mItem != null)
+                mItem.setIcon(R.drawable.camera);
+        }
+    }
+
+
+    public CameraActivity( MainActivity activity) {
+
+        Log.d(getClass().toString(), "Camera ");
+        mainActivity = activity;
+        mItem = mainActivity.getMenu().findItem(R.id.camera);
+        checkCameraHardware(mainActivity.getApplicationContext());
+    }
+
+    public void onCreate() {
+        if(camera_available) {
+            Log.d(getClass().toString(), "Camera onCreate");
+            mainActivity.setContentView(R.layout.activity_main);
+
             mCamera = getCameraInstance();
-
-            mPrieview = new CameraPreview(this, mCamera);
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+            mPrieview = new CameraPreview(mainActivity.getApplicationContext(), mCamera);
+            FrameLayout preview = (FrameLayout) mainActivity.findViewById(R.id.camera_preview);
             preview.addView(mPrieview);
         }
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-    @Override
     protected void onPause() {
-        super.onPause();
+
+        Log.d(getClass().toString(), "Camera onPause");
         if (mCamera != null){
+            mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
             mCamera.release();
+            mPrieview = null;
             mCamera = null;
+            FrameLayout preview = (FrameLayout) mainActivity.findViewById(R.id.camera_preview);
+            preview.removeAllViews();
         }
     }
 
-    private boolean checkCameraHardware(Context context) {
+    private void checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-            return true;
-        } else {
-            return false;
+            camera_available = true;
         }
     }
 
     public static android.hardware.Camera getCameraInstance() {
+        System.out.println("camera instance");
         android.hardware.Camera camera = null;
         try {
             camera = android.hardware.Camera.open();
         } catch (Exception e) {
-
+            System.out.println("AAAAA!!");
         }
         return camera;
     }

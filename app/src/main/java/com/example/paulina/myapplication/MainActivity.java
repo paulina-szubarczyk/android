@@ -11,7 +11,12 @@ import android.view.View;
 public class MainActivity extends ActionBarActivity {
 
     public final static String EXTRA_MESSAGE = "com.paulina.MESSAGE";
+    private CameraActivity cameraActivity;
+    private Menu mMenu;
 
+    public Menu getMenu() {
+        return mMenu;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,6 +26,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        mMenu = menu;
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
     }
@@ -30,16 +36,14 @@ public class MainActivity extends ActionBarActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
 
         switch (item.getItemId()) {
-            case R.id.action_search:
-                openSearch();
+            case R.id.camera:
+                menageDeviceCamera();
                 return true;
-            case R.id.action_settings:
-                openSettings();
+            case R.id.therm_camera:
+                startThermCamera();
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -55,12 +59,22 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    public void startDeviceCamera(View view) {
-        Intent intent = new Intent(this, CameraActivity.class);
-        startActivity(intent);
+    public void menageDeviceCamera() {
+
+        if(cameraActivity == null) {
+            cameraActivity = new CameraActivity(this);
+        }
+        if(cameraActivity.isOn()) {
+            cameraActivity.onPause();
+            cameraActivity.setOn(false);
+        } else {
+            cameraActivity.onCreate();
+            cameraActivity.setOn(true);
+        }
+
     }
 
-    public void startThermCamera(View view) {
+    public void startThermCamera() {
         Intent intent = new Intent(this, ThermAppActivity.class);
         startActivity(intent);
     }

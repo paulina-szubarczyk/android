@@ -11,9 +11,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-/**
- * Created by adam on 12.05.15.
- */
 public class TemperatureConverter {
     public static final int MODE_CONSTANT = 1;
     public static final int MODE_ADAPTIVE = 2;

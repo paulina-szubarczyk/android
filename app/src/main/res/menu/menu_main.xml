@@ -1,10 +1,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
-    <item android:id="@+id/action_search"
-        android:icon="@drawable/abc_ic_search_api_mtrl_alpha"
-        android:title="@string/action_search"
-        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/camera"
+        android:icon="@drawable/camera"
+        android:title="@string/camera"
+        app:showAsAction="ifRoom"
+        />
+    <item android:id="@+id/therm_camera"
+        android:icon="@drawable/ic_launcher"
+        android:title="@string/therm_camera"
+        app:showAsAction="ifRoom"
+        />
 </menu>
