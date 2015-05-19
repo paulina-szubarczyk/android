@@ -1,4 +1,5 @@
 .gradle
+libs/opencv/*
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
@@ -7,3 +8,4 @@
 /captures
 *.iml
 *.idea
+

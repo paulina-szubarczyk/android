@@ -48,7 +48,7 @@ public class CameraActivity  {
             mainActivity.setContentView(R.layout.activity_main);
 
             mCamera = getCameraInstance();
-            mPrieview = new CameraPreview(mainActivity.getApplicationContext(), mCamera);
+            mPrieview = new CameraPreview(mainActivity, mCamera);
             FrameLayout preview = (FrameLayout) mainActivity.findViewById(R.id.camera_preview);
             preview.addView(mPrieview);
         }

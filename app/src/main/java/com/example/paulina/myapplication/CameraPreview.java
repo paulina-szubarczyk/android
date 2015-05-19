@@ -1,49 +1,45 @@
 package com.example.paulina.myapplication;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.nfc.Tag;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     private SurfaceHolder mHolder;
     private Camera mCamera;
+    private BitmapDrawable mDrawer;
+    private YuvConfig yuvConfig;
+    private TemperatureConverter temperature;
 
-    public CameraPreview(Context context, Camera camera) {
-        super(context);
-
-        Log.d(getClass().toString(), "Preview ");
+    public CameraPreview(MainActivity activity,Camera camera) {
+        super(activity.getApplicationContext());
 
         mCamera = camera;
         mCamera.setDisplayOrientation(90);
+        yuvConfig = new YuvConfig(mCamera.getParameters(),0.15,0.85,50);
+        temperature = new TemperatureConverter();
+
         mHolder = getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-
+        mDrawer = new BitmapDrawable((ImageView) activity.findViewById(R.id.camera_preview2));
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
 
         Log.d(getClass().toString(), "Preview create");
         try {
-            mCamera.setPreviewDisplay(holder);
+            mCamera.setPreviewDisplay(mHolder);
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
-            setWillNotDraw(false);
         } catch (Exception e) {
             Log.d(getClass().toString(),
                     "Error seting camera preview: " + e.getMessage());
@@ -51,6 +47,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
+        mDrawer.pause();
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -71,23 +68,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
 
-        Canvas canvas = null;
-
-        if (mHolder.getSurface() == null)
-            return;
-
-        Camera.Parameters parameters = camera.getParameters();
-        int width = parameters.getPreviewSize().width;
-        int height = parameters.getPreviewSize().height;
-
-        YuvImage yuv = new YuvImage(data, parameters.getPreviewFormat(), width, height, null);
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        yuv.compressToJpeg(new Rect(0, 0, width/2, height/2), 25, out);
-
-        byte[] bytes = out.toByteArray();
-        final Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-
+//        IntBuffer intBuf =
+//                ByteBuffer.wrap(data)
+//                        .order(ByteOrder.BIG_ENDIAN)
+//                        .asIntBuffer();
+//        int[] array = new int[intBuf.remaining()];
+//        intBuf.get(array);
+//        mDrawer.post(temperature.convertTemperature
+//                (array, yuvConfig.getRectangle().width(),yuvConfig.getRectangle().height()));
+        mDrawer.post(yuvConfig.compressToBitmap(data));
     }
 
 }

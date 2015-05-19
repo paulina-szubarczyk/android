@@ -41,4 +41,5 @@ dependencies {
     androidTestCompile('com.android.support.test:testing-support-lib:0.1') {
         exclude group: 'junit'  // junit:junit-dep conflicts with junit:unit
     }
+    compile project(':libs:opencv')
 }

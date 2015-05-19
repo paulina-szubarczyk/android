@@ -28,33 +28,14 @@ import thermapp.sdk.ThermAppAPI_Callback;
 
 public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_Callback {
 
-
-
     int[] gray_palette;
     int[] therm_palette;
     int[] my_palette;
 
     private ThermAppAPI mDeviceSdk = null;
-    private Bitmap bmp_ptr = null;
-    private ImageView imageView = null;
-    private Matrix matrix_imrot_90 = null;
     private BroadcastReceiver mUsbReceiver;
-
-    ExecutorService threadPoolExecutor = Executors.newSingleThreadExecutor();
-    private Runnable rnbl = rnblDraw();
-    Future future = threadPoolExecutor.submit(rnbl);
-
-
-
-    private Runnable rnblDraw() {
-        return new Runnable() {
-            public void run() {
-                imageView.setImageBitmap(Bitmap.createBitmap(bmp_ptr, 0, 0,
-                        bmp_ptr.getWidth(), bmp_ptr.getHeight(), matrix_imrot_90,
-                        true));
-            }
-        };
-    }
+    private BitmapDrawable mDrawer;
+    private ImageView imageView = null;
 
     private boolean InitSdk() {
         if(mDeviceSdk == null)
@@ -78,18 +59,15 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     }
 
     private void thermCreate() {
-        matrix_imrot_90 = new Matrix();
         CreatePalettes();
-
         imageView = (ImageView) findViewById(R.id.imageView1);
-
+        mDrawer = new BitmapDrawable(imageView);
 
         try {
             super.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         } catch(Exception e) {
 
         }
-
 
         if(InitSdk()) {
             init();
@@ -121,8 +99,6 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
         } catch(Exception e) {
 
         }
-
-        imageView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -135,9 +111,7 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     @Override
     protected void onPause() {
         super.onPause();
-        future.cancel(true);
-        rnbl = rnblDraw();
-        future = threadPoolExecutor.submit(rnbl);
+        mDrawer.pause();
     }
 
     @Override
@@ -148,12 +122,7 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
 
     @Override
     public void OnFrameGetThermAppBMP(Bitmap bitmap) {
-        if (null != bitmap) {
-            bmp_ptr = bitmap;
-            imageView.post(rnbl);
-        }
-
-
+        mDrawer.post(bitmap);
     }
 
     @Override

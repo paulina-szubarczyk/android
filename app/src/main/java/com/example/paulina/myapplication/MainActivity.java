@@ -7,12 +7,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.opencv.android.OpenCVLoader;
+
 
 public class MainActivity extends ActionBarActivity {
 
     public final static String EXTRA_MESSAGE = "com.paulina.MESSAGE";
     private CameraActivity cameraActivity;
     private Menu mMenu;
+
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            // Handle initialization error
+        }
+    }
 
     public Menu getMenu() {
         return mMenu;
