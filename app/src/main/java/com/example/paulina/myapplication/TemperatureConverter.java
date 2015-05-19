@@ -81,6 +81,7 @@ public class TemperatureConverter {
         // now we have values between 0 and maxTemp -> multiply by (255 / maxTemp);
         Core.multiply(mat, new Scalar(255.0f / maxTemp), mat);
 
+        mat.convertTo(mat, CvType.CV_8UC1);
         return mat;
     }
 
