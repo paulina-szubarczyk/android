@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.FrameLayout;
 
 
@@ -17,6 +18,9 @@ public class CameraActivity  {
     private boolean camera_available = false;
     private boolean on = false;
 
+    private RectangleView rectangleView;
+
+
     public boolean isOn() {
         return on;
     }
@@ -26,10 +30,14 @@ public class CameraActivity  {
             this.on = true;
             if(mItem != null)
                 mItem.setIcon(R.drawable.close_camera);
+
+            rectangleView.setVisibility(View.VISIBLE);
         } else {
             this.on = false;
             if(mItem != null)
                 mItem.setIcon(R.drawable.camera);
+
+            rectangleView.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -40,6 +48,9 @@ public class CameraActivity  {
         mainActivity = activity;
         mItem = mainActivity.getMenu().findItem(R.id.camera);
         checkCameraHardware(mainActivity.getApplicationContext());
+
+        rectangleView = new RectangleView(activity.getApplicationContext());
+
     }
 
     public void onCreate() {
@@ -51,6 +62,8 @@ public class CameraActivity  {
             mPrieview = new CameraPreview(mainActivity, mCamera);
             FrameLayout preview = (FrameLayout) mainActivity.findViewById(R.id.camera_preview);
             preview.addView(mPrieview);
+            preview.addView(rectangleView);
+
         }
     }
 

@@ -14,7 +14,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private SurfaceHolder mHolder;
     private Camera mCamera;
-    private BitmapDrawable mDrawer;
+    private BitmapDrawable surfaceDrawer;
     private YuvConfig yuvConfig;
     private TemperatureConverter temperature;
 
@@ -30,7 +30,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-        mDrawer = new BitmapDrawable((ImageView) activity.findViewById(R.id.camera_preview2));
+        surfaceDrawer = new BitmapDrawable((ImageView) activity.findViewById(R.id.camera_preview2));
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -40,6 +40,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.setPreviewDisplay(mHolder);
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
+
         } catch (Exception e) {
             Log.d(getClass().toString(),
                     "Error seting camera preview: " + e.getMessage());
@@ -47,7 +48,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        mDrawer.pause();
+        surfaceDrawer.pause();
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -76,7 +77,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 //        intBuf.get(array);
 //        mDrawer.post(temperature.convertTemperature
 //                (array, yuvConfig.getRectangle().width(),yuvConfig.getRectangle().height()));
-        mDrawer.post(yuvConfig.compressToBitmap(data));
+        surfaceDrawer.post(yuvConfig.compressToBitmap(data));
     }
 
 }
