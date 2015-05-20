@@ -1,5 +1,4 @@
 .gradle
-libs/opencv/*
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
@@ -8,4 +7,6 @@ libs/opencv/*
 /captures
 *.iml
 *.idea
+libs/opencv
+!libs/opencv/build.gradle
 
