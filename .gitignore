@@ -7,6 +7,4 @@
 /captures
 *.iml
 *.idea
-libs/opencv
-!libs/opencv/build.gradle
 
