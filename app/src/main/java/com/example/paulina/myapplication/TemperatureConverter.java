@@ -31,17 +31,18 @@ public class TemperatureConverter {
     }
 
     public TemperatureConverter() {
-        this.colorMap = ColorMap.AUTUMN;
+        this.colorMap = ColorMap.HOT;
         this.mode = MODE_ADAPTIVE;
     }
 
-    public Bitmap convertTemperature(int[] temperature, int width, int height) {
+    public Bitmap convertTemperature(int[] temperature, int width, int height, String data) {
 
         Mat mat = new Mat(width, height, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
-
         mat = this.scaleTemperatue(mat);
         Imgproc.applyColorMap(mat, mat, colorMap.value);
+
+        data = mat.toString();
 
         Bitmap bitmap = null;
         try {

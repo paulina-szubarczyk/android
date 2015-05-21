@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,16 +21,18 @@ public class BitmapDrawable {
     private ImageView imageView = null;
     private Matrix matrix_imrot_90 = null;
 
-
     private Runnable rnblDraw() {
         return new Runnable() {
             public void run() {
+                imageView.setVisibility(View.VISIBLE);
+
                 imageView.setImageBitmap(Bitmap.createBitmap(bmp_ptr, 0, 0,
                         bmp_ptr.getWidth(), bmp_ptr.getHeight(), matrix_imrot_90,
                         true));
             }
         };
     }
+
 
     BitmapDrawable(ImageView view) {
         imageView = view;

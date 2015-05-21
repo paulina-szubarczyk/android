@@ -2,17 +2,62 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="#000000"
-    tools:context="com.example.paulina.myapplication.ThermAppActivity">
+    android:background="#ffffffff"
+    tools:context="com.example.paulina.myapplication.ThermAppActivity"
+    android:visibility="visible">
+
 
     <ImageView
         android:id="@+id/imageView1"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentLeft="true"
-        android:layout_centerInParent="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:adjustViewBounds="false"
-        android:src="@drawable/background" />
+        android:src="@drawable/background"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/mat" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/length"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/height"
+        android:layout_alignBottom="@+id/length"
+        android:layout_toRightOf="@+id/length"
+        android:layout_toEndOf="@+id/length" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/width"
+        android:layout_alignBottom="@+id/height"
+        android:layout_toRightOf="@+id/height"
+        android:layout_toEndOf="@+id/height" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="bla bla bla"
+        android:id="@+id/mat"
+        android:layout_below="@+id/length"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 
 </RelativeLayout>

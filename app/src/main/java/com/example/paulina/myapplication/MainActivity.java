@@ -1,11 +1,15 @@
 package com.example.paulina.myapplication;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -15,6 +19,7 @@ public class MainActivity extends ActionBarActivity {
     public final static String EXTRA_MESSAGE = "com.paulina.MESSAGE";
     private CameraActivity cameraActivity;
     private Menu mMenu;
+    private RectangleView rectangleView;
 
     static {
         if (!OpenCVLoader.initDebug()) {
@@ -29,6 +34,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        rectangleView = (RectangleView) findViewById(R.id.rectangle);
     }
 
     @Override
@@ -51,7 +57,9 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             case R.id.therm_camera:
                 startThermCamera();
-
+                return true;
+            case R.id.rectangle_button:
+                rectangleView.setChangeable(true);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -75,6 +83,7 @@ public class MainActivity extends ActionBarActivity {
         if(cameraActivity.isOn()) {
             cameraActivity.onPause();
             cameraActivity.setOn(false);
+
         } else {
             cameraActivity.onCreate();
             cameraActivity.setOn(true);
@@ -85,6 +94,30 @@ public class MainActivity extends ActionBarActivity {
     public void startThermCamera() {
         Intent intent = new Intent(this, ThermAppActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+        float x = event.getX();
+        float y = event.getY();
+
+        if(rectangleView.isChangeable()) {
+            if (action == MotionEvent.ACTION_DOWN) {
+                if (rectangleView.getRectangle().contains(x, y)) {
+                    rectangleView.getRectangle().scale(false); // true is scale up, false is scale down
+                    rectangleView.invalidate();
+                }
+            }
+            if (action == MotionEvent.ACTION_UP) {
+                if (rectangleView.getRectangle().contains(x, y)) {
+                    rectangleView.getRectangle().scale(true); // true is scale up, false is scale down
+                    rectangleView.invalidate();
+                }
+            }
+        }
+
+        return true;
     }
 
 }

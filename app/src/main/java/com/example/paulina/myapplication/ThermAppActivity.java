@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.widget.TextView;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +37,8 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     private ThermAppAPI mDeviceSdk = null;
     private BroadcastReceiver mUsbReceiver;
     private BitmapDrawable mDrawer;
-    private ImageView imageView = null;
+    private ParamTextUpdater paramTextUpdater;
+    private TemperatureConverter temperature;
 
     private boolean InitSdk() {
         if(mDeviceSdk == null)
@@ -60,8 +63,16 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
 
     private void thermCreate() {
         CreatePalettes();
-        imageView = (ImageView) findViewById(R.id.imageView1);
-        mDrawer = new BitmapDrawable(imageView);
+        mDrawer = new BitmapDrawable((ImageView) findViewById(R.id.imageView1));
+
+        paramTextUpdater = new ParamTextUpdater();
+
+        paramTextUpdater.setHeight_text((TextView) findViewById(R.id.height));
+        paramTextUpdater.setWidth_text((TextView) findViewById(R.id.width));
+        paramTextUpdater.setLength_text((TextView) findViewById(R.id.length));
+        paramTextUpdater.setMat_text((TextView) findViewById(R.id.mat));
+
+        temperature = new TemperatureConverter();
 
         try {
             super.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -86,7 +97,6 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
         IntentFilter filter = new IntentFilter();
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         registerReceiver(mUsbReceiver, filter);
-
     }
 
     private void init(){
@@ -112,6 +122,7 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     protected void onPause() {
         super.onPause();
         mDrawer.pause();
+        paramTextUpdater.pause();
     }
 
     @Override
@@ -122,13 +133,20 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
 
     @Override
     public void OnFrameGetThermAppBMP(Bitmap bitmap) {
-        mDrawer.post(bitmap);
+        //mDrawer.post(bitmap);
     }
 
     @Override
     public void OnFrameGetThermAppTemperatures(int[] ints, int i, int i1) {
 
+        Bitmap bitmap = temperature.convertTemperature(ints, i, i1, paramTextUpdater.getMat());
+        mDrawer.post(bitmap);
+        paramTextUpdater.setLength(ints.length);
+        paramTextUpdater.setWidth(i);
+        paramTextUpdater.setHeight(i1);
+        runOnUiThread(paramTextUpdater.rnbl);
     }
+
 
     private void CreatePalettes() {
         gray_palette = new int[256];

@@ -16,7 +16,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera mCamera;
     private BitmapDrawable surfaceDrawer;
     private YuvConfig yuvConfig;
-    private TemperatureConverter temperature;
 
     public CameraPreview(MainActivity activity,Camera camera) {
         super(activity.getApplicationContext());
@@ -24,7 +23,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mCamera = camera;
         mCamera.setDisplayOrientation(90);
         yuvConfig = new YuvConfig(mCamera.getParameters(),0.15,0.85,50);
-        temperature = new TemperatureConverter();
+
 
         mHolder = getHolder();
         mHolder.addCallback(this);

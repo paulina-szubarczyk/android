@@ -5,11 +5,16 @@
     <item android:id="@+id/camera"
         android:icon="@drawable/camera"
         android:title="@string/camera"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         />
     <item android:id="@+id/therm_camera"
         android:icon="@drawable/ic_launcher"
         android:title="@string/therm_camera"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
+        />
+    <item android:id="@+id/rectangle_button"
+        android:icon="@drawable/add"
+        android:title="@string/therm_camera"
+        app:showAsAction="always"
         />
 </menu>
