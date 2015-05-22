@@ -1,5 +1,6 @@
 package com.example.paulina.myapplication;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,7 +10,11 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
+
+import org.opencv.core.Rect;
 
 
 /**
@@ -24,6 +29,7 @@ public class RectangleView extends View {
     public class MRect {
 
         private RectF rectangle;
+        private RectF screen;
 
         public RectF getRectangle() {
             return rectangle;
@@ -31,34 +37,33 @@ public class RectangleView extends View {
 
         private double scale;
         private double scale_amount ;
-        private View view;
-        public MRect(double scale_, View view_)
+        int height, width;
+        public MRect(double scale_, Context context)
         {
             rectangle = new RectF();
             scale_amount = 0.05;
             scale = scale_;
-            view = view_;
-
-            rectangle.top = 100;
-            rectangle.bottom = 400;
-            rectangle.left = 100;
-            rectangle.right = 400;
+            DisplayMetrics displaymetrics = new DisplayMetrics();
+            ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+            height = displaymetrics.heightPixels - 100;
+            width = displaymetrics.widthPixels;
+            recalculate();
         }
         public void recalculate() {
 
-            rectangle.top = (int) (scale*view.getHeight());
-            rectangle.bottom = (int) ((1-scale)*view.getHeight());
-            rectangle.left = (int) (scale*view.getWidth());
-            rectangle.right = (int) ((1-scale)*view.getWidth());
+            rectangle.top = (int) (scale*height);
+            rectangle.bottom = (int) ((1-scale)*height);
+            rectangle.left = (int) (scale*width);
+            rectangle.right = (int) ((1-scale)*width);
             System.out.println(rectangle.top+" " + rectangle.bottom + " " + rectangle.left + " " +rectangle.right);
         }
 
         public void scale(boolean up) {
             scale += up ? scale_amount : -scale_amount;
-            if (scale > 0.5)
-                scale = 0.5;
-            else if (scale < 0.05)
-                scale = 0.05;
+            if (scale > 0.3)
+                scale = 0.3;
+            else if (scale < 0.1)
+                scale = 0.1;
 
             recalculate();
         }
@@ -92,25 +97,26 @@ public class RectangleView extends View {
     }
 
     public RectangleView(Context context, AttributeSet attrs) {
-        super(context,attrs);
+        super(context, attrs);
         init();
     }
     public RectangleView(Context context, AttributeSet attrs, int defStyle) {
-        super(context,attrs,defStyle);
+        super(context, attrs, defStyle);
         init();
     }
     private void init() {
         paint = new Paint();
-        paint.setColor(Color.YELLOW);
-        paint.setStrokeWidth(2);
+        paint.setColor(Color.GREEN);
+        paint.setStrokeWidth(4);
         paint.setStyle(Paint.Style.STROKE);
-        rectangle = new MRect(0.25,this);
+        rectangle = new MRect(0.25,getContext());
         changeable = false;
+        setWillNotDraw(false);
     }
 
     @Override
     public void onDraw(Canvas canvas) {
-
+        super.onDraw(canvas);
         System.out.println("DRAw!!");
         canvas.drawRect(rectangle.getRectangle().left, rectangle.getRectangle().top,
                         rectangle.getRectangle().right, rectangle.getRectangle().bottom, paint);
@@ -122,6 +128,7 @@ public class RectangleView extends View {
         bundle.putParcelable(State.INSTANCE_SAVE.toString(), super.onSaveInstanceState());
         bundle.putInt(State.STATE_TO_SAVE.toString(), this.stateToSave);
         bundle.putDouble(State.SCALE.toString(), this.rectangle.getScale());
+        bundle.putBoolean(State.CHANGEABLE.toString(), this.changeable);
         return bundle;
     }
 
@@ -133,6 +140,7 @@ public class RectangleView extends View {
             state = bundle.getParcelable(State.INSTANCE_SAVE.toString());
             rectangle.setScale(bundle.getDouble(State.SCALE.toString()));
             rectangle.recalculate();
+            setChangeable(bundle.getBoolean(State.CHANGEABLE.toString()));
         }
         super.onRestoreInstanceState(state);
     }
@@ -140,7 +148,8 @@ public class RectangleView extends View {
     enum State {
         INSTANCE_SAVE,
         STATE_TO_SAVE,
-        SCALE
+        SCALE,
+        CHANGEABLE
     }
 
 

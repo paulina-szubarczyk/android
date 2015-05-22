@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -20,6 +21,7 @@ public class MainActivity extends ActionBarActivity {
     private CameraView cameraView;
     private Menu mMenu;
     private RectangleView rectangleView;
+    private FrameLayout frameLayout;
 
     static {
         if (!OpenCVLoader.initDebug()) {
@@ -35,6 +37,29 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         rectangleView = (RectangleView) findViewById(R.id.rectangle);
+        frameLayout = (FrameLayout)findViewById(R.id.main);
+        frameLayout.invalidate();
+    }
+
+    @Override
+    public void onResume() {
+
+        super.onResume();
+
+        setContentView(R.layout.activity_main);
+        rectangleView = (RectangleView) findViewById(R.id.rectangle);
+        frameLayout = (FrameLayout)findViewById(R.id.main);
+        frameLayout.invalidate();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
     @Override
@@ -60,20 +85,15 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             case R.id.rectangle_button:
                 rectangleView.setChangeable(!rectangleView.isChangeable());
+                if(rectangleView.isChangeable())
+                    rectangleView.setVisibility(View.VISIBLE);
+                else
+                    rectangleView.setVisibility(View.INVISIBLE);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
 
-    }
-
-    public void manageRectangleView() {
-        if(rectangleView != null) {
-            rectangleView.setVisibility(View.VISIBLE);
-            rectangleView.bringToFront();
-            FrameLayout frameLayout = (FrameLayout)findViewById(R.id.main);
-            System.out.println("\n\nRECTANGLE ON TOP");
-        }
     }
 
     public void menageDeviceCamera() {
@@ -84,17 +104,16 @@ public class MainActivity extends ActionBarActivity {
         if(cameraView.isOn()) {
             cameraView.onPause();
             cameraView.setOn(false);
+            onResume();
         } else {
             cameraView.onCreate();
             cameraView.setOn(true);
         }
-        manageRectangleView();
     }
 
     public void startThermCamera() {
         Intent intent = new Intent(this, ThermAppActivity.class);
         startActivity(intent);
-        manageRectangleView();
     }
 
     @Override
@@ -103,17 +122,26 @@ public class MainActivity extends ActionBarActivity {
         float x = event.getX();
         float y = event.getY();
 
+        if(rectangleView.getVisibility() == View.VISIBLE) {
+            System.out.println("VISIBLE!!!!");
+        } else if (rectangleView.getVisibility() == View.INVISIBLE) {
+            System.out.println("INVISIBLE!!!!");
+        } else if (rectangleView.getVisibility() == View.GONE) {
+            System.out.println("GONE!!!");
+        }
+
+        rectangleView.invalidate();
+
         if(rectangleView.isChangeable()) {
             if (action == MotionEvent.ACTION_DOWN) {
+
                 if (rectangleView.getRectangle().contains(x, y)) {
                     rectangleView.getRectangle().scale(false); // true is scale up, false is scale down
-                    rectangleView.invalidate();
                 }
             }
             if (action == MotionEvent.ACTION_UP) {
                 if (rectangleView.getRectangle().contains(x, y)) {
                     rectangleView.getRectangle().scale(true); // true is scale up, false is scale down
-                    rectangleView.invalidate();
                 }
             }
         }

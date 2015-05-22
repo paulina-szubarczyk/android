@@ -10,6 +10,7 @@ import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class TemperatureConverter {
@@ -49,20 +50,12 @@ public class TemperatureConverter {
         Mat mat = new Mat(height, width, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
         mat = this.scaleTemperatue(mat);
+        mat = postprocess(mat);
+
         Imgproc.applyColorMap(mat, mat, colorMap.value);
-//        System.out.print(" after colormap = ");
-//        System.out.println(mat.dump());
-//        System.out.print(" type = ");
-//        System.out.println(mat.type());
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2RGBA);
-//        System.out.print(" after conv = ");
-//        System.out.println(mat.dump());
-//        System.out.print(" type = ");
-//        System.out.println(mat.type());
 
-        //fileDumper.dumpScreen(mat, mat.width(),mat.height());
-
-        Bitmap bitmap = null;
+         Bitmap bitmap = null;
         try {
             bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(mat, bitmap);
@@ -101,6 +94,13 @@ public class TemperatureConverter {
         Core.multiply(mat, new Scalar(255.0f / maxTemp), mat);
 
         mat.convertTo(mat, CvType.CV_8UC1);
+        return mat;
+    }
+
+    private Mat postprocess(Mat mat) {
+
+        Imgproc.medianBlur(mat,mat,3);
+
         return mat;
     }
 

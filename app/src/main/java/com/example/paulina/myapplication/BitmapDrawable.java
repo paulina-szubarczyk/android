@@ -10,12 +10,14 @@ import android.widget.TextView;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class BitmapDrawable {
 
 
     ExecutorService threadPoolExecutor = Executors.newSingleThreadExecutor();
     private Runnable rnbl = rnblDraw();
+    private Runnable clear = rnblClear();
     Future future = threadPoolExecutor.submit(rnbl);
 
     private Bitmap bmp_ptr = null;
@@ -34,6 +36,15 @@ public class BitmapDrawable {
         };
     }
 
+    private Runnable rnblClear() {
+        return new Runnable() {
+            public void run() {
+                imageView.setVisibility(View.GONE);
+                System.out.println("GONE bitmap!!!");
+            }
+        };
+
+    }
 
     BitmapDrawable(ImageView view) {
         imageView = view;
@@ -42,11 +53,14 @@ public class BitmapDrawable {
     }
 
     public void pause() {
+
+        future.cancel(true);
+        clear = rnblClear();
+        future = threadPoolExecutor.submit(clear);
+        imageView.post(clear);
         future.cancel(true);
         rnbl = rnblDraw();
         future = threadPoolExecutor.submit(rnbl);
-        imageView.setVisibility(View.GONE);
-        imageView.setImageResource(android.R.color.white);
     }
 
     public void post(Bitmap bitmap) {

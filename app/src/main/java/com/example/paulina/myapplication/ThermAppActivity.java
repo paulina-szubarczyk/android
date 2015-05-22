@@ -87,21 +87,22 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
 
         if(InitSdk()) {
             init();
-        }
-        // Define USB detached event receiver
-        if(mUsbReceiver == null) {
-            mUsbReceiver = new BroadcastReceiver() {
-                public void onReceive(Context context, Intent intent) {
-                    if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent
-                            .getAction())) ;
-                }
-            };
-        }
 
-        // Listen for new devices
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        registerReceiver(mUsbReceiver, filter);
+            // Define USB detached event receiver
+            if (mUsbReceiver == null) {
+                mUsbReceiver = new BroadcastReceiver() {
+                    public void onReceive(Context context, Intent intent) {
+                        if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent
+                                .getAction())) ;
+                    }
+                };
+            }
+
+            // Listen for new devices
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+            registerReceiver(mUsbReceiver, filter);
+        }
     }
 
     private void init(){
@@ -145,7 +146,7 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     public void OnFrameGetThermAppTemperatures(int[] ints, int i, int i1) {
         Bitmap bitmap = temperature.convertTemperature(ints, i, i1);
         mDrawer.post(bitmap);
-        fileDumper.dumpScreen(ints,i,i1);
+//        fileDumper.dumpScreen(ints,i,i1);
     }
 
 

@@ -13,6 +13,11 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
 
+
+    <uses-feature
+        android:name="android.hardware.usb.host"
+        android:required="false" />
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -40,21 +45,6 @@
                 android:value="com.example.paulina.myapplication.MainActivity" />
         </activity>
         <activity
-            android:name=".CameraView"
-            android:label="@string/title_activity_camera"
-            android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.paulina.myapplication.MainActivity" />
-
-            <!-- <intent-filter> -->
-            <!-- <action android:name="ANDROID.INTENT.ACTION.MAIN" /> -->
-            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-            <!-- </intent-filter> -->
-
-        </activity>
-        <activity
             android:name=".ThermAppActivity"
             android:label="@string/title_activity_therm_app"
             android:parentActivityName=".MainActivity" >
@@ -63,10 +53,9 @@
                 android:value="com.example.paulina.myapplication.MainActivity"
                 android:resource="@xml/device_filter" />
 
-
-            <!-- <intent-filter> -->
-            <!-- <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" /> -->
-            <!-- </intent-filter> -->
+             <intent-filter>
+             <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+             </intent-filter>
         </activity>
         <activity
             android:name=".ThermDataActivity"
@@ -74,7 +63,12 @@
             android:parentActivityName=".ThermAppActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.paulina.myapplication.ThermAppActivity" />
+                android:value="com.example.paulina.myapplication.ThermAppActivity"
+                android:resource="@xml/device_filter"/>
+
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
         </activity>
     </application>
 

@@ -5,9 +5,6 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.FrameLayout;
 
 
 public class CameraView {
@@ -55,18 +52,14 @@ public class CameraView {
             if(mCamera != null) {
                 mPrieview = new CameraPreview(mainActivity, mCamera);
             }
-
         }
     }
 
-    protected void onPause() {
+    public void onPause() {
 
         Log.d(getClass().toString(), "Camera onPause");
         if (mCamera != null){
             mPrieview.onPause();
-            mCamera.stopPreview();
-            mCamera.setPreviewCallback(null);
-            mCamera.release();
             mPrieview = null;
             mCamera = null;
         }

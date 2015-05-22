@@ -1,12 +1,6 @@
 package com.example.paulina.myapplication;
 
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.hardware.Camera;
-import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.widget.ImageView;
 
 import java.nio.ByteBuffer;
@@ -15,68 +9,28 @@ import java.nio.IntBuffer;
 
 public class CameraPreview implements Camera.PreviewCallback {
 
-//    private SurfaceHolder mHolder;
     private Camera mCamera;
     private BitmapDrawable surfaceDrawer;
     private YuvConfig yuvConfig;
-
     private FileDumper fileDumper;
 
     public CameraPreview(MainActivity activity,Camera camera) {
-//        super(activity.getApplicationContext());
 
         mCamera = camera;
         mCamera.setDisplayOrientation(90);
-        yuvConfig = new YuvConfig(mCamera.getParameters(),0.15,0.85,50);
         mCamera.setPreviewCallback(this);
         mCamera.startPreview();
 
-//        mHolder = getHolder();
-//        mHolder.addCallback(this);
-//        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
+        yuvConfig = new YuvConfig(mCamera.getParameters(), 0.15, 0.85, 50);
         surfaceDrawer = new BitmapDrawable((ImageView) activity.findViewById(R.id.camera_preview2));
-
         fileDumper = new FileDumper("camera");
-
-    }
-
-    public void surfaceCreated(SurfaceHolder holder) {
-
-        Log.d(getClass().toString(), "Preview create");
-        try {
-//            mCamera.setPreviewDisplay(mHolder);
-            mCamera.setPreviewCallback(this);
-            mCamera.startPreview();
-
-        } catch (Exception e) {
-            Log.d(getClass().toString(),
-                    "Error seting camera preview: " + e.getMessage());
-        }
     }
 
     public void onPause(){
+        mCamera.stopPreview();
+        mCamera.setPreviewCallback(null);
+        mCamera.release();
         surfaceDrawer.pause();
-    }
-
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        surfaceDrawer.pause();
-
-    }
-
-    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-
-        Log.d(getClass().toString(), "Preview changed");
-//        if (mHolder.getSurface() == null)
-//            return;
-
-        try {
-            mCamera.stopPreview();
-        } catch (Exception e) {
-
-        }
-
-//        surfaceCreated(mHolder);
     }
 
     @Override
@@ -88,9 +42,6 @@ public class CameraPreview implements Camera.PreviewCallback {
                         .asIntBuffer();
         int[] array = new int[intBuf.remaining()];
         intBuf.get(array);
-//        mDrawer.post(temperature.convertTemperature
-//                (array, yuvConfig.getRectangle().width(),yuvConfig.getRectangle().height()));
-
         surfaceDrawer.post(yuvConfig.compressToBitmap(data));
         fileDumper.dumpScreen(array,yuvConfig.getWidth(),yuvConfig.getHeight());
     }
