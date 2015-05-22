@@ -5,6 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -15,15 +18,7 @@ import android.view.View;
 public class RectangleView extends View {
     private Paint paint;
     private MRect rectangle;
-
-    public boolean isChangeable() {
-        return changeable;
-    }
-
-    public void setChangeable(boolean changeable) {
-        this.changeable = changeable;
-    }
-
+    private int stateToSave;
     private boolean changeable;
 
     public class MRect {
@@ -60,8 +55,8 @@ public class RectangleView extends View {
 
         public void scale(boolean up) {
             scale += up ? scale_amount : -scale_amount;
-            if (scale > 0.4)
-                scale = 0.4;
+            if (scale > 0.5)
+                scale = 0.5;
             else if (scale < 0.05)
                 scale = 0.05;
 
@@ -71,10 +66,24 @@ public class RectangleView extends View {
         public boolean contains(float x, float y){
             return rectangle.contains(x,y);
         }
+        public double getScale() {
+            return scale;
+        }
+        public void setScale(double scale) {
+            this.scale = scale;
+        }
     }
 
     public MRect getRectangle() {
         return rectangle;
+    }
+
+    public boolean isChangeable() {
+        return changeable;
+    }
+
+    public void setChangeable(boolean changeable) {
+        this.changeable = changeable;
     }
 
     public RectangleView(Context context) {
@@ -92,8 +101,8 @@ public class RectangleView extends View {
     }
     private void init() {
         paint = new Paint();
-        paint.setColor(Color.BLACK);
-        paint.setStrokeWidth(0);
+        paint.setColor(Color.YELLOW);
+        paint.setStrokeWidth(2);
         paint.setStyle(Paint.Style.STROKE);
         rectangle = new MRect(0.25,this);
         changeable = false;
@@ -106,4 +115,35 @@ public class RectangleView extends View {
         canvas.drawRect(rectangle.getRectangle().left, rectangle.getRectangle().top,
                         rectangle.getRectangle().right, rectangle.getRectangle().bottom, paint);
     }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(State.INSTANCE_SAVE.toString(), super.onSaveInstanceState());
+        bundle.putInt(State.STATE_TO_SAVE.toString(), this.stateToSave);
+        bundle.putDouble(State.SCALE.toString(), this.rectangle.getScale());
+        return bundle;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        if(state instanceof Bundle) {
+            Bundle bundle = (Bundle) state;
+            this.stateToSave = bundle.getInt(State.STATE_TO_SAVE.toString());
+            state = bundle.getParcelable(State.INSTANCE_SAVE.toString());
+            rectangle.setScale(bundle.getDouble(State.SCALE.toString()));
+            rectangle.recalculate();
+        }
+        super.onRestoreInstanceState(state);
+    }
+
+    enum State {
+        INSTANCE_SAVE,
+        STATE_TO_SAVE,
+        SCALE
+    }
+
+
 }
+
+

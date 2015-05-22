@@ -1,6 +1,5 @@
 package com.example.paulina.myapplication;
 
-import android.view.View;
 import android.widget.TextView;
 
 import java.util.concurrent.ExecutorService;
@@ -18,10 +17,6 @@ public class ParamTextUpdater  {
     private int height = 0;
     private int width = 0;
     private String mat ;
-
-    public String getMat() {
-        return mat;
-    }
 
     public void setWidth(int width) {
         this.width = width;
@@ -64,8 +59,10 @@ public class ParamTextUpdater  {
                     width_text.setText(String.format("w: %d", width));
                 if (height_text != null)
                     height_text.setText(String.format("h: %d", height));
-                if (mat_text != null)
+                if (mat_text != null) {
                     mat_text.setText(mat);
+                    mat_text.invalidate();
+                }
             }
         };
     }

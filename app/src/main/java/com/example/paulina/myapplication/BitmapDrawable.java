@@ -1,6 +1,7 @@
 package com.example.paulina.myapplication;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.view.View;
 import android.widget.ImageView;
@@ -38,14 +39,14 @@ public class BitmapDrawable {
         imageView = view;
         matrix_imrot_90 = new Matrix();
         matrix_imrot_90.postRotate(90);
-        imageView.setVisibility(View.VISIBLE);
     }
 
     public void pause() {
         future.cancel(true);
         rnbl = rnblDraw();
         future = threadPoolExecutor.submit(rnbl);
-        imageView.setVisibility(View.INVISIBLE);
+        imageView.setVisibility(View.GONE);
+        imageView.setImageResource(android.R.color.white);
     }
 
     public void post(Bitmap bitmap) {

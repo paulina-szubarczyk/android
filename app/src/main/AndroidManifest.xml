@@ -40,7 +40,7 @@
                 android:value="com.example.paulina.myapplication.MainActivity" />
         </activity>
         <activity
-            android:name=".CameraActivity"
+            android:name=".CameraView"
             android:label="@string/title_activity_camera"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" >

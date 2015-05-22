@@ -1,10 +1,10 @@
 package com.example.paulina.myapplication;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -17,7 +17,7 @@ import org.opencv.android.OpenCVLoader;
 public class MainActivity extends ActionBarActivity {
 
     public final static String EXTRA_MESSAGE = "com.paulina.MESSAGE";
-    private CameraActivity cameraActivity;
+    private CameraView cameraView;
     private Menu mMenu;
     private RectangleView rectangleView;
 
@@ -59,7 +59,7 @@ public class MainActivity extends ActionBarActivity {
                 startThermCamera();
                 return true;
             case R.id.rectangle_button:
-                rectangleView.setChangeable(true);
+                rectangleView.setChangeable(!rectangleView.isChangeable());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -67,33 +67,34 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    public void openSearch() {
-
-    }
-
-    public void openSettings() {
-
+    public void manageRectangleView() {
+        if(rectangleView != null) {
+            rectangleView.setVisibility(View.VISIBLE);
+            rectangleView.bringToFront();
+            FrameLayout frameLayout = (FrameLayout)findViewById(R.id.main);
+            System.out.println("\n\nRECTANGLE ON TOP");
+        }
     }
 
     public void menageDeviceCamera() {
 
-        if(cameraActivity == null) {
-            cameraActivity = new CameraActivity(this);
+        if(cameraView == null) {
+            cameraView = new CameraView(this);
         }
-        if(cameraActivity.isOn()) {
-            cameraActivity.onPause();
-            cameraActivity.setOn(false);
-
+        if(cameraView.isOn()) {
+            cameraView.onPause();
+            cameraView.setOn(false);
         } else {
-            cameraActivity.onCreate();
-            cameraActivity.setOn(true);
+            cameraView.onCreate();
+            cameraView.setOn(true);
         }
-
+        manageRectangleView();
     }
 
     public void startThermCamera() {
         Intent intent = new Intent(this, ThermAppActivity.class);
         startActivity(intent);
+        manageRectangleView();
     }
 
     @Override

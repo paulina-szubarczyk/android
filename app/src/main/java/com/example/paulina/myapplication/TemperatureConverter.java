@@ -1,5 +1,6 @@
 package com.example.paulina.myapplication;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
 
@@ -22,27 +23,34 @@ public class TemperatureConverter {
     private float maxTemperature;
     private int mode;
 
-    public TemperatureConverter(ColorMap colorMap, int mode) {
+    private FileDumper fileDumper;
+
+    public TemperatureConverter(ColorMap colorMap, int mode, Context context) {
         this.colorMap = colorMap;
         if(mode != MODE_ADAPTIVE && mode != MODE_CONSTANT) {
             throw new IllegalArgumentException("Invalid mode");
         }
         this.mode = mode;
+
+        fileDumper = new FileDumper("temperature");
+
     }
 
-    public TemperatureConverter() {
+    public TemperatureConverter(Context context) {
         this.colorMap = ColorMap.HOT;
         this.mode = MODE_ADAPTIVE;
+
+        fileDumper = new FileDumper("temperature");
     }
 
-    public Bitmap convertTemperature(int[] temperature, int width, int height, String data) {
+    public Bitmap convertTemperature(int[] temperature, int width, int height) {
 
         Mat mat = new Mat(width, height, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
         mat = this.scaleTemperatue(mat);
         Imgproc.applyColorMap(mat, mat, colorMap.value);
 
-        data = mat.toString();
+        //fileDumper.dumpScreen(mat, mat.width(),mat.height());
 
         Bitmap bitmap = null;
         try {

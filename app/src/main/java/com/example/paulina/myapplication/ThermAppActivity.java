@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.widget.TextView;
 
+import java.io.FileOutputStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 
@@ -39,6 +40,8 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     private BitmapDrawable mDrawer;
     private ParamTextUpdater paramTextUpdater;
     private TemperatureConverter temperature;
+    private String mat_string = "";
+    private FileDumper fileDumper;
 
     private boolean InitSdk() {
         if(mDeviceSdk == null)
@@ -72,7 +75,9 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
         paramTextUpdater.setLength_text((TextView) findViewById(R.id.length));
         paramTextUpdater.setMat_text((TextView) findViewById(R.id.mat));
 
-        temperature = new TemperatureConverter();
+        temperature = new TemperatureConverter(getApplicationContext());
+
+        fileDumper = new FileDumper("thermapp");
 
         try {
             super.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -138,13 +143,9 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
 
     @Override
     public void OnFrameGetThermAppTemperatures(int[] ints, int i, int i1) {
-
-        Bitmap bitmap = temperature.convertTemperature(ints, i, i1, paramTextUpdater.getMat());
+        Bitmap bitmap = temperature.convertTemperature(ints, i, i1);
         mDrawer.post(bitmap);
-        paramTextUpdater.setLength(ints.length);
-        paramTextUpdater.setWidth(i);
-        paramTextUpdater.setHeight(i1);
-        runOnUiThread(paramTextUpdater.rnbl);
+        fileDumper.dumpScreen(ints,i,i1);
     }
 
 
