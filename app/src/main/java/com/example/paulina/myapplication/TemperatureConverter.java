@@ -37,10 +37,20 @@ public class TemperatureConverter {
 
     public Bitmap convertTemperature(int[] temperature, int width, int height, String data) {
 
-        Mat mat = new Mat(width, height, CvType.CV_32SC1);
+
+        Mat mat = new Mat(height, width, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
         mat = this.scaleTemperatue(mat);
         Imgproc.applyColorMap(mat, mat, colorMap.value);
+//        System.out.print(" after colormap = ");
+//        System.out.println(mat.dump());
+//        System.out.print(" type = ");
+//        System.out.println(mat.type());
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2RGBA);
+//        System.out.print(" after conv = ");
+//        System.out.println(mat.dump());
+//        System.out.print(" type = ");
+//        System.out.println(mat.type());
 
         data = mat.toString();
 
@@ -56,7 +66,7 @@ public class TemperatureConverter {
         return bitmap;
     }
 
-    private Mat scaleTemperatue(Mat mat) {
+    public Mat scaleTemperatue(Mat mat) {
         // if mode == this.MODE_CONSTANT
         float maxTemp = this.maxTemperature;
         float minTemp = this.minTemperature;
