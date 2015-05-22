@@ -9,6 +9,7 @@ import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class TemperatureConverter {
@@ -41,6 +42,8 @@ public class TemperatureConverter {
         Mat mat = new Mat(height, width, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
         mat = this.scaleTemperatue(mat);
+        mat = postprocess(mat);
+
         Imgproc.applyColorMap(mat, mat, colorMap.value);
 //        System.out.print(" after colormap = ");
 //        System.out.println(mat.dump());
@@ -51,6 +54,8 @@ public class TemperatureConverter {
 //        System.out.println(mat.dump());
 //        System.out.print(" type = ");
 //        System.out.println(mat.type());
+
+
 
         data = mat.toString();
 
@@ -93,6 +98,16 @@ public class TemperatureConverter {
         Core.multiply(mat, new Scalar(255.0f / maxTemp), mat);
 
         mat.convertTo(mat, CvType.CV_8UC1);
+        return mat;
+    }
+
+    private Mat postprocess(Mat mat) {
+
+        Size kernelSize = new Size(3, 3);
+        double sigma = 2;
+
+        Imgproc.GaussianBlur(mat, mat, kernelSize, 2);
+
         return mat;
     }
 
