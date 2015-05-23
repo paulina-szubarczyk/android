@@ -117,9 +117,20 @@ public class RectangleView extends View {
     @Override
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        System.out.println("DRAw!!");
+        System.out.println("DRAW!!");
         canvas.drawRect(rectangle.getRectangle().left, rectangle.getRectangle().top,
-                        rectangle.getRectangle().right, rectangle.getRectangle().bottom, paint);
+                rectangle.getRectangle().right, rectangle.getRectangle().bottom, paint);
+    }
+
+    public void visibilityStatus() {
+
+        if(getVisibility() == View.VISIBLE) {
+            System.out.println("VISIBLE!!!!");
+        } else if (getVisibility() == View.INVISIBLE) {
+            System.out.println("INVISIBLE!!!!");
+        } else if (getVisibility() == View.GONE) {
+            System.out.println("GONE!!!");
+        }
     }
 
     @Override

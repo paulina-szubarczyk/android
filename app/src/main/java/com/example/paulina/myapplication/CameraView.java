@@ -1,5 +1,6 @@
 package com.example.paulina.myapplication;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
@@ -11,7 +12,7 @@ public class CameraView {
 
     private Camera mCamera;
     private CameraPreview mPrieview;
-    private MainActivity mainActivity;
+    private ThermAppActivity mainActivity;
     private MenuItem mItem;
     private boolean camera_available = false;
     private boolean on = false;
@@ -34,8 +35,7 @@ public class CameraView {
         }
     }
 
-
-    public CameraView(MainActivity activity) {
+    public CameraView(ThermAppActivity activity) {
 
         Log.d(getClass().toString(), "Camera ");
         mainActivity = activity;
@@ -46,7 +46,6 @@ public class CameraView {
     public void onCreate() {
         if(camera_available) {
             Log.d(getClass().toString(), "Camera onCreate");
-            mainActivity.setContentView(R.layout.activity_main);
 
             mCamera = getCameraInstance();
             if(mCamera != null) {

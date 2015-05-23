@@ -27,23 +27,15 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <!--<activity-->
+            <!--android:name=".MainActivity"-->
+            <!--android:label="@string/app_name" >-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".DisplayMessageActivity"
-            android:label="@string/title_activity_display_message"
-            android:parentActivityName=".MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.paulina.myapplication.MainActivity" />
-        </activity>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
         <activity
             android:name=".ThermAppActivity"
             android:label="@string/title_activity_therm_app"
@@ -53,8 +45,11 @@
                 android:value="com.example.paulina.myapplication.MainActivity"
                 android:resource="@xml/device_filter" />
 
+
              <intent-filter>
-             <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                 <action android:name="android.intent.action.MAIN" />
+                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                 <category android:name="android.intent.category.LAUNCHER" />
              </intent-filter>
         </activity>
         <activity

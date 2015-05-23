@@ -1,5 +1,6 @@
 package com.example.paulina.myapplication;
 
+import android.app.Activity;
 import android.hardware.Camera;
 import android.widget.ImageView;
 
@@ -14,7 +15,7 @@ public class CameraPreview implements Camera.PreviewCallback {
     private YuvConfig yuvConfig;
     private FileDumper fileDumper;
 
-    public CameraPreview(MainActivity activity,Camera camera) {
+    public CameraPreview(Activity activity,Camera camera) {
 
         mCamera = camera;
         mCamera.setDisplayOrientation(90);

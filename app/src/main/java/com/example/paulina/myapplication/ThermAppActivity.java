@@ -1,12 +1,12 @@
 package com.example.paulina.myapplication;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -14,16 +14,10 @@ import android.hardware.usb.UsbManager;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.widget.TextView;
 
-import java.io.FileOutputStream;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import org.opencv.android.OpenCVLoader;
 
 import thermapp.sdk.ThermAppAPI;
 import thermapp.sdk.ThermAppAPI_Callback;
@@ -31,17 +25,22 @@ import thermapp.sdk.ThermAppAPI_Callback;
 
 public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_Callback {
 
-    int[] gray_palette;
-    int[] therm_palette;
-    int[] my_palette;
-
     private ThermAppAPI mDeviceSdk = null;
     private BroadcastReceiver mUsbReceiver;
     private BitmapDrawable mDrawer;
-    private ParamTextUpdater paramTextUpdater;
+
+    private RelativeLayout relativeLayout;
     private TemperatureConverter temperature;
-    private String mat_string = "";
     private FileDumper fileDumper;
+    private CameraView cameraView;
+    private Menu mMenu;
+    private RectangleView rectangleView;
+
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            // Handle initialization error
+        }
+    }
 
     private boolean InitSdk() {
         if(mDeviceSdk == null)
@@ -57,33 +56,119 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        mMenu = menu;
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+        float x = event.getX();
+        float y = event.getY();
+
+        rectangleView.invalidate();
+
+        if(rectangleView.isChangeable()) {
+            if (action == MotionEvent.ACTION_DOWN) {
+
+                if (rectangleView.getRectangle().contains(x, y)) {
+                    rectangleView.getRectangle().scale(false); // true is scale up, false is scale down
+                }
+            }
+            if (action == MotionEvent.ACTION_UP) {
+                if (rectangleView.getRectangle().contains(x, y)) {
+                    rectangleView.getRectangle().scale(true); // true is scale up, false is scale down
+                }
+            }
+        }
+
+        return true;
+    }
+    public Menu getMenu() {
+        return mMenu;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        switch (item.getItemId()) {
+            case R.id.camera:
+                menageDeviceCamera();
+                return true;
+            case R.id.therm_camera:
+                return true;
+            case R.id.rectangle_button:
+                rectangleView.setChangeable(!rectangleView.isChangeable());
+                if(rectangleView.isChangeable())
+                    rectangleView.setVisibility(View.VISIBLE);
+                else
+                    rectangleView.setVisibility(View.INVISIBLE);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+    }
+
+    public void menageDeviceCamera() {
+
+        if(cameraView == null) {
+            cameraView = new CameraView(this);
+        }
+        if(cameraView.isOn()) {
+            cameraView.onPause();
+            cameraView.setOn(false);
+            rectangleView.bringToFront();
+
+            relativeLayout.invalidate();
+            rectangleView.visibilityStatus();
+        } else {
+            cameraView.onCreate();
+            cameraView.setOn(true);
+            rectangleView.bringToFront();
+
+            relativeLayout.invalidate();
+            rectangleView.visibilityStatus();
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_therm_app);
         thermCreate();
+        mainActivity();
+    }
+
+    private void mainActivity() {
+        rectangleView = (RectangleView) findViewById(R.id.rectangle);
+        relativeLayout = (RelativeLayout) findViewById(R.id.main);
+        rectangleView.bringToFront();
+        relativeLayout.invalidate();
+        rectangleView.visibilityStatus();
+        drawLegend();
+    }
+
+    private void drawLegend() {
+        ImageView legend = (ImageView) findViewById(R.id.legend);
+        legend.setImageBitmap(temperature.getLegend(40));
+        TextView min = (TextView) findViewById(R.id.min_legend);
+        TextView max = (TextView) findViewById(R.id.max_legend);
+//        min.setText((int)temperature.getMinTemperature());
+//        max.setText((int)temperature.getMaxTemperature());
     }
 
     private void thermCreate() {
-        CreatePalettes();
         mDrawer = new BitmapDrawable((ImageView) findViewById(R.id.imageView1));
-
-        paramTextUpdater = new ParamTextUpdater();
-
-        paramTextUpdater.setHeight_text((TextView) findViewById(R.id.height));
-        paramTextUpdater.setWidth_text((TextView) findViewById(R.id.width));
-        paramTextUpdater.setLength_text((TextView) findViewById(R.id.length));
-        paramTextUpdater.setMat_text((TextView) findViewById(R.id.mat));
-
         temperature = new TemperatureConverter(getApplicationContext());
-
         fileDumper = new FileDumper("thermapp");
-
-        try {
-            super.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        } catch(Exception e) {
-
-        }
 
         if(InitSdk()) {
             init();
@@ -102,6 +187,7 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
             IntentFilter filter = new IntentFilter();
             filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
             registerReceiver(mUsbReceiver, filter);
+
         }
     }
 
@@ -128,12 +214,15 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     protected void onPause() {
         super.onPause();
         mDrawer.pause();
-        paramTextUpdater.pause();
     }
 
     @Override
     protected  void onStop() {
-        unregisterReceiver(mUsbReceiver);
+        try {
+            unregisterReceiver(mUsbReceiver);
+        } catch (Exception e) {
+
+        }
         super.onStop();
     }
 
@@ -146,44 +235,16 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
     public void OnFrameGetThermAppTemperatures(int[] ints, int i, int i1) {
         Bitmap bitmap = temperature.convertTemperature(ints, i, i1);
         mDrawer.post(bitmap);
-//        fileDumper.dumpScreen(ints,i,i1);
+        rectangleView.bringToFront();
+        fileDumper.dumpScreen(ints,i,i1);
     }
 
-
-    private void CreatePalettes() {
-        gray_palette = new int[256];
-        for (int i = 0; i < 256; i++)
-            gray_palette[i] = 0xFF000000 | (i << 0) | (i << 8) | (i << 16);
-
-        int PALETTE_MAX_IND = 256 - 1;
-        therm_palette = new int[256];
-
-        for (int i = 0; i < 256; i++)
-            therm_palette[i] = 0xFF000000
-                    | (i << 16)
-                    | ((PALETTE_MAX_IND - ((i * (PALETTE_MAX_IND - i)) >> 6)) << 8)
-                    | ((PALETTE_MAX_IND - i) << 0);
-
-        my_palette = createPalette(253, 250, 0, 86, 0, 154);
-    }
-
-    private int[] createPalette(int sR, int sG, int sB, int eR, int eG, int eB) {
-        int[] my_palette = new int[256];
-        float pr;
-        float Red;
-        float Green;
-        float Blue;
-
-        for (int i = 0; i < 256; i++) {
-            pr = (float) i / (float) 256;
-            Red = sR * pr + eR * (1 - pr);
-            Green = sG * pr + eG * (1 - pr);
-            Blue = sB * pr + eB * (1 - pr);
-
-            my_palette[i] = 0xFF000000 | (Math.round(Red) << 16)
-                    | (Math.round(Green) << 8) | (Math.round(Blue) << 0);
+    public void startThermCamera(){
+        try {
+            mDeviceSdk.StartVideo();
+        } catch (Exception e) {
+            // Report error to use
         }
-        return my_palette;
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -192,12 +253,7 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
                 String result = data.getStringExtra("result");
 
                 if (result.equals("OK")) {
-                    try {
-                        mDeviceSdk.StartVideo();
-                    } catch (Exception e) {
-                        // Report error to use
-                    }
-
+                    startThermCamera();
                 } else if (result.equals("EXIT")) {
                 }
             }

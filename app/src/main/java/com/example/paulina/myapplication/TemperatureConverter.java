@@ -10,12 +10,12 @@ import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class TemperatureConverter {
     public static final int MODE_CONSTANT = 1;
     public static final int MODE_ADAPTIVE = 2;
+    public static final int LEGEND_SIZE = 256;
 
     private static final int TEMPERATURE_SCALE = 100;
 
@@ -23,25 +23,30 @@ public class TemperatureConverter {
     private float minTemperature;
     private float maxTemperature;
     private int mode;
+    private int[] legend;
 
     private FileDumper fileDumper;
 
     public TemperatureConverter(ColorMap colorMap, int mode, Context context) {
         this.colorMap = colorMap;
-        if(mode != MODE_ADAPTIVE && mode != MODE_CONSTANT) {
+        if (mode != MODE_ADAPTIVE && mode != MODE_CONSTANT) {
             throw new IllegalArgumentException("Invalid mode");
         }
         this.mode = mode;
-
-        fileDumper = new FileDumper("temperature");
-
+        init();
     }
+
 
     public TemperatureConverter(Context context) {
         this.colorMap = ColorMap.HOT;
         this.mode = MODE_ADAPTIVE;
+        init();
+    }
 
+    public void init() {
+        maxTemperature = minTemperature = 0;
         fileDumper = new FileDumper("temperature");
+        createLegend();
     }
 
     public Bitmap convertTemperature(int[] temperature, int width, int height) {
@@ -51,7 +56,10 @@ public class TemperatureConverter {
         mat.put(0, 0, temperature);
         mat = this.scaleTemperatue(mat);
         mat = postprocess(mat);
+        return createBitmapInColorMap(mat);
+    }
 
+    public Bitmap createBitmapInColorMap(Mat mat) {
         Imgproc.applyColorMap(mat, mat, colorMap.value);
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2RGBA);
 
@@ -102,6 +110,22 @@ public class TemperatureConverter {
         Imgproc.medianBlur(mat,mat,3);
 
         return mat;
+    }
+
+    public Bitmap getLegend(int height) {
+        Mat mat = new Mat(height, LEGEND_SIZE, CvType.CV_32SC1);
+        for(int i = 0; i < height; ++i) {
+            mat.put(i,0,legend);
+        }
+        mat.convertTo(mat, CvType.CV_8UC1);
+        return createBitmapInColorMap(mat);
+    }
+
+    private void createLegend() {
+        legend = new int[LEGEND_SIZE];
+        for(int i = 0; i < LEGEND_SIZE; ++i) {
+            legend[i] = i+1;
+        }
     }
 
     public ColorMap getColorMap() {

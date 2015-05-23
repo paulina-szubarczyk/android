@@ -13,7 +13,7 @@ import java.io.IOException;
 public class FileDumper {
 
     private String camera_name;
-    final private int FILE_LIMIT = 1;
+    final private int FILE_LIMIT = 10;
     private int counter = 0;
 
     private File dir;
