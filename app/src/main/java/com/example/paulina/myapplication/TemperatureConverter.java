@@ -230,7 +230,7 @@ public class TemperatureConverter {
         }
     }
 
-    void estimateRelativeLocation(byte[] cameraBytes, int width, int height) {
+    Point estimateRelativeLocation(byte[] cameraBytes, int width, int height) {
 
         Mat cameraMat = new Mat(height, width, CvType.CV_8UC3);
         cameraMat.put(0, 0, cameraBytes);
@@ -239,11 +239,11 @@ public class TemperatureConverter {
         height /= 2;
         Imgproc.resize(cameraMat, cameraMat, new Size(height, width));
 
-        int x1 = (int)(FRAC * width);
-        int x2 = width - x1;
-        int y1 = (int)(FRAC * height);
-        int y2 = height - y1;
-        cameraMat = cameraMat.adjustROI(y1, y2, x1, x2);
+//        int x1 = (int)(FRAC * width);
+//        int x2 = width - x1;
+//        int y1 = (int)(FRAC * height);
+//        int y2 = height - y1;
+//        cameraMat = cameraMat.adjustROI(y1, y2, x1, x2);
 
         MatOfKeyPoint tempKeypoints = new MatOfKeyPoint();
         MatOfKeyPoint camKeypoints = new MatOfKeyPoint();
@@ -264,11 +264,15 @@ public class TemperatureConverter {
         for(DMatch match : matchList) {
             if(match.distance < DIST_LIMIT) {
                 finalMatchList.add(match);
+                break;
             }
         }
 
+        DMatch match = finalMatchList.get(0);
+        Point camPoint = camKeypoints.toArray()[match.queryIdx].pt;
+        Point tempPoint = tempKeypoints.toArray()[match.trainIdx].pt;
 
-
+        return new Point(2 * (camPoint.x - tempPoint.x), 2 * (camPoint.y - tempPoint.y));
     }
 
     private void computeHistogram(Mat mat) {
