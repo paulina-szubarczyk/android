@@ -1,11 +1,20 @@
 package com.example.paulina.myapplication;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 
 public class CameraView {
@@ -82,6 +91,12 @@ public class CameraView {
             }
         }
         return camera;
+    }
+
+    public void takePhoto() {
+        if(mPrieview != null) {
+            mPrieview.setTAKE_PHOTO(true);
+        }
     }
 
 }

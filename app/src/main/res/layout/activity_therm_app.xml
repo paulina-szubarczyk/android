@@ -31,7 +31,7 @@
         android:id="@+id/legend"
         android:background="#ffffffff"
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="20dp"
         android:adjustViewBounds="false"
         android:layout_toRightOf="@+id/min_legend"
         android:layout_toLeftOf="@+id/max_legend"
@@ -40,40 +40,39 @@
     <ImageView
         android:id="@+id/imageView1"
         android:src="@drawable/background"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:adjustViewBounds="false"
         android:layout_gravity="center"
         android:layout_below="@+id/legend"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentStart="true" />
 
     <TextView
-        android:layout_width="40sp"
-        android:layout_height="40sp"
+        android:layout_width="20sp"
+        android:layout_height="20sp"
         android:text="0"
         android:id="@+id/min_legend"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_above="@+id/rectangle"
-        android:textSize="20dp"
+        android:textSize="15dp"
         android:textIsSelectable="false"
         android:gravity="center" />
 
     <TextView
-        android:layout_width="40sp"
-        android:layout_height="40sp"
+        android:layout_width="20sp"
+        android:layout_height="20sp"
         android:text="0"
         android:id="@+id/max_legend"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_above="@+id/rectangle"
-        android:textSize="20dp"
+        android:textSize="15dp"
         android:gravity="center"
         android:textIsSelectable="false" />
 

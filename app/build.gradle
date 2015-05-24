@@ -34,7 +34,8 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile files('src/main/libs/thermappsdk.jar')
     compile 'com.android.support:appcompat-v7:22.1.1'
-    compile 'com.android.support:support-v4:22.1.0'
+    compile 'com.android.support:support-v4:22.1.1'
+    compile 'com.diogobernardino:williamchart:1.7.0'
 
     androidTestCompile 'junit:junit:4.11'
     androidTestCompile('com.android.support.test:testing-support-lib:0.1') {

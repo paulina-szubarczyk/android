@@ -1,12 +1,22 @@
 package com.example.paulina.myapplication;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.widget.ImageView;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class CameraPreview implements Camera.PreviewCallback {
 
@@ -14,6 +24,7 @@ public class CameraPreview implements Camera.PreviewCallback {
     private BitmapDrawable surfaceDrawer;
     private YuvConfig yuvConfig;
     private FileDumper fileDumper;
+    private boolean TAKE_PHOTO;
 
     public CameraPreview(Activity activity,Camera camera) {
 
@@ -25,6 +36,7 @@ public class CameraPreview implements Camera.PreviewCallback {
         yuvConfig = new YuvConfig(mCamera.getParameters(), 0.15, 0.85, 50);
         surfaceDrawer = new BitmapDrawable((ImageView) activity.findViewById(R.id.camera_preview2));
         fileDumper = new FileDumper("camera");
+        TAKE_PHOTO = false;
     }
 
     public void onPause(){
@@ -43,8 +55,17 @@ public class CameraPreview implements Camera.PreviewCallback {
                         .asIntBuffer();
         int[] array = new int[intBuf.remaining()];
         intBuf.get(array);
-        surfaceDrawer.post(yuvConfig.compressToBitmap(data));
-        fileDumper.dumpScreen(array,yuvConfig.getWidth(),yuvConfig.getHeight());
+        Bitmap bitmap = yuvConfig.compressToBitmap(data);
+        surfaceDrawer.post(bitmap);
+        fileDumper.dumpScreen(array, yuvConfig.getWidth(), yuvConfig.getHeight());
+
+        if(TAKE_PHOTO) {
+            fileDumper.takePicture(bitmap);
+            TAKE_PHOTO = false;
+        }
     }
 
+    public void setTAKE_PHOTO(boolean TAKE_PHOTO) {
+        this.TAKE_PHOTO = TAKE_PHOTO;
+    }
 }

@@ -1,20 +1,19 @@
 package com.example.paulina.myapplication;
 
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.hardware.usb.UsbManager;
-
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.IntentFilter;
 import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
@@ -23,18 +22,26 @@ import thermapp.sdk.ThermAppAPI;
 import thermapp.sdk.ThermAppAPI_Callback;
 
 
-public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_Callback {
+public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
+
+    private RelativeLayout relativeLayout;
+    private CameraView cameraView;
+    private Menu mMenu;
+    private RectangleView rectangleView;
+    private VIEW_MODE mode;
 
     private ThermAppAPI mDeviceSdk = null;
     private BroadcastReceiver mUsbReceiver;
     private BitmapDrawable mDrawer;
-
-    private RelativeLayout relativeLayout;
-    private TemperatureConverter temperature;
     private FileDumper fileDumper;
-    private CameraView cameraView;
-    private Menu mMenu;
-    private RectangleView rectangleView;
+    private TemperatureConverter temperature;
+    private boolean TAKE_PHOTO;
+
+    enum VIEW_MODE {
+        THERM_CAMERA,
+        CAMERA,
+        GRAPHS
+    }
 
     static {
         if (!OpenCVLoader.initDebug()) {
@@ -42,17 +49,50 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
         }
     }
 
-    private boolean InitSdk() {
-        if(mDeviceSdk == null)
-            mDeviceSdk = new ThermAppAPI(this);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
 
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_therm_app);
+
+        mode = VIEW_MODE.THERM_CAMERA;
+        thermCreate();
+        mainActivity();
+    }
+
+    private void mainActivity() {
+        rectangleView = (RectangleView) findViewById(R.id.rectangle);
+        relativeLayout = (RelativeLayout) findViewById(R.id.main);
+        rectangleView.bringToFront();
+        relativeLayout.invalidate();
+        rectangleView.visibilityStatus();
+        drawLegend();
+    }
+
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+
+        onCreate(new Bundle());
+        super.onNewIntent(intent);
+    }
+
+    @Override
+    protected void onPause() {
+        mDrawer.pause();
+
+        super.onPause();
+    }
+
+    @Override
+    protected  void onStop() {
         try {
-            mDeviceSdk.ConnectToDevice();
+            unregisterReceiver(mUsbReceiver);
         } catch (Exception e) {
-            mDeviceSdk = null;
-            return false;
+
         }
-        return true;
+
+        super.onStop();
     }
 
     @Override
@@ -101,14 +141,18 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
             case R.id.camera:
                 menageDeviceCamera();
                 return true;
-            case R.id.therm_camera:
-                return true;
             case R.id.rectangle_button:
                 rectangleView.setChangeable(!rectangleView.isChangeable());
                 if(rectangleView.isChangeable())
                     rectangleView.setVisibility(View.VISIBLE);
                 else
                     rectangleView.setVisibility(View.INVISIBLE);
+                return true;
+            case R.id.photo:
+                if(mode == VIEW_MODE.CAMERA && cameraView != null)
+                    cameraView.takePhoto();
+                else if(mode == VIEW_MODE.THERM_CAMERA)
+                    takePhoto();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -125,6 +169,7 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
             cameraView.onPause();
             cameraView.setOn(false);
             rectangleView.bringToFront();
+            mode = VIEW_MODE.THERM_CAMERA;
 
             relativeLayout.invalidate();
             rectangleView.visibilityStatus();
@@ -132,40 +177,46 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
             cameraView.onCreate();
             cameraView.setOn(true);
             rectangleView.bringToFront();
-
+            mode = VIEW_MODE.CAMERA;
             relativeLayout.invalidate();
             rectangleView.visibilityStatus();
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_therm_app);
-        thermCreate();
-        mainActivity();
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                String result = data.getStringExtra("result");
+
+                if (result.equals("OK")) {
+                    startThermCamera();
+                } else if (result.equals("EXIT")) {
+                }
+            }
+            if (resultCode == RESULT_CANCELED) {
+
+            }
+        }
     }
 
-    private void mainActivity() {
-        rectangleView = (RectangleView) findViewById(R.id.rectangle);
-        relativeLayout = (RelativeLayout) findViewById(R.id.main);
-        rectangleView.bringToFront();
-        relativeLayout.invalidate();
-        rectangleView.visibilityStatus();
-        drawLegend();
+    private boolean InitSdk() {
+
+        if(mDeviceSdk == null) {
+            mDeviceSdk = new ThermAppAPI(this);
+        }
+
+        try {
+            mDeviceSdk.ConnectToDevice();
+        } catch (Exception e) {
+            mDeviceSdk = null;
+            return false;
+        }
+        return true;
     }
 
-    private void drawLegend() {
-        ImageView legend = (ImageView) findViewById(R.id.legend);
-        legend.setImageBitmap(temperature.getLegend(40));
-        TextView min = (TextView) findViewById(R.id.min_legend);
-        TextView max = (TextView) findViewById(R.id.max_legend);
-//        min.setText((int)temperature.getMinTemperature());
-//        max.setText((int)temperature.getMaxTemperature());
-    }
-
-    private void thermCreate() {
+    public void thermCreate() {
         mDrawer = new BitmapDrawable((ImageView) findViewById(R.id.imageView1));
         temperature = new TemperatureConverter(getApplicationContext());
         fileDumper = new FileDumper("thermapp");
@@ -182,7 +233,6 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
                     }
                 };
             }
-
             // Listen for new devices
             IntentFilter filter = new IntentFilter();
             filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
@@ -191,52 +241,25 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
         }
     }
 
-    private void init(){
 
-        try{
-            final Intent intent = new Intent(this, ThermDataActivity.class);
-            intent.putExtra("serialnum", Integer.toString(mDeviceSdk.GetSerialNumber()));
-            startActivityForResult(intent, 1);
-
-        } catch(Exception e) {
-
-        }
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-
-        onCreate(new Bundle());
-        super.onNewIntent(intent);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mDrawer.pause();
-    }
-
-    @Override
-    protected  void onStop() {
-        try {
-            unregisterReceiver(mUsbReceiver);
-        } catch (Exception e) {
-
-        }
-        super.onStop();
-    }
-
-    @Override
-    public void OnFrameGetThermAppBMP(Bitmap bitmap) {
-        //mDrawer.post(bitmap);
+    public void drawLegend() {
+        ImageView legend = (ImageView) findViewById(R.id.legend);
+        legend.setImageBitmap(temperature.getLegend(20));
+        TextView min = (TextView) findViewById(R.id.min_legend);
+        TextView max = (TextView) findViewById(R.id.max_legend);
+//        min.setText((int)temperature.getMinTemperature());
+//        max.setText((int)temperature.getMaxTemperature());
     }
 
     @Override
     public void OnFrameGetThermAppTemperatures(int[] ints, int i, int i1) {
         Bitmap bitmap = temperature.convertTemperature(ints, i, i1);
         mDrawer.post(bitmap);
-        rectangleView.bringToFront();
-        fileDumper.dumpScreen(ints,i,i1);
+        fileDumper.dumpScreen(ints, i, i1);
+        if(TAKE_PHOTO) {
+            fileDumper.takePicture(bitmap);
+            TAKE_PHOTO = false;
+        }
     }
 
     public void startThermCamera(){
@@ -247,19 +270,23 @@ public class ThermAppActivity extends ActionBarActivity implements ThermAppAPI_C
         }
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
-            if (resultCode == RESULT_OK) {
-                String result = data.getStringExtra("result");
+    @Override
+    public void OnFrameGetThermAppBMP(Bitmap bitmap) {
+        //mDrawer.post(bitmap);
+    }
 
-                if (result.equals("OK")) {
-                    startThermCamera();
-                } else if (result.equals("EXIT")) {
-                }
-            }
-            if (resultCode == RESULT_CANCELED) {
+    public void takePhoto() {
+        TAKE_PHOTO = true;
+    }
+    private void init(){
 
-            }
+        try{
+            final Intent intent = new Intent(this, ThermDataActivity.class);
+            intent.putExtra("serialnum", Integer.toString(mDeviceSdk.GetSerialNumber()));
+            startActivityForResult(intent, 1);
+
+        } catch(Exception e) {
+
         }
     }
 }

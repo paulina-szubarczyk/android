@@ -7,14 +7,14 @@
         android:title="@string/camera"
         app:showAsAction="always"
         />
-    <item android:id="@+id/therm_camera"
-        android:icon="@drawable/ic_launcher"
-        android:title="@string/therm_camera"
-        app:showAsAction="always"
-        />
     <item android:id="@+id/rectangle_button"
         android:icon="@drawable/add"
-        android:title="@string/therm_camera"
+        android:title="@string/rectangle"
+        app:showAsAction="always"
+        />
+    <item android:id="@+id/photo"
+        android:icon="@drawable/add"
+        android:title="@string/photo"
         app:showAsAction="always"
         />
 </menu>

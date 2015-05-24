@@ -124,7 +124,7 @@ public class TemperatureConverter {
     private void createLegend() {
         legend = new int[LEGEND_SIZE];
         for(int i = 0; i < LEGEND_SIZE; ++i) {
-            legend[i] = i+1;
+            legend[i] = i;
         }
     }
 

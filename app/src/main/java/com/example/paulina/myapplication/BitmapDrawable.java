@@ -47,7 +47,7 @@ public class BitmapDrawable {
         imageView = view;
         imageView.bringToFront();
         matrix_rot_90 = new Matrix();
-        matrix_rot_90.postRotate(90);
+        matrix_rot_90.postRotate( 90 );
     }
 
     public void pause() {

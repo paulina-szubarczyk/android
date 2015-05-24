@@ -7,6 +7,9 @@ import android.graphics.YuvImage;
 import android.hardware.Camera;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 
 public class YuvConfig {
     int width;
@@ -55,6 +58,7 @@ public class YuvConfig {
     int format;
     int quality;
     Rect rectangle;
+
     ByteArrayOutputStream compressedYuvJpeg;
 
     YuvConfig(Camera.Parameters parameters, double top, double bottom, int quality_) {
@@ -66,6 +70,9 @@ public class YuvConfig {
         format = parameters.getPreviewFormat();
         rectangle = new Rect((int) (width * top), (int) (height * top),
                 (int) (width * bottom), (int) (height * bottom));
+
+        System.out.println("width: " + width + " height: " + height + " format: " + format);
+
     }
 
     public Bitmap compressToBitmap(byte[] data) {
@@ -75,6 +82,7 @@ public class YuvConfig {
         yuv.compressToJpeg(rectangle, quality, compressedYuvJpeg);
 
         byte[] bytes = compressedYuvJpeg.toByteArray();
+
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
     }
 }

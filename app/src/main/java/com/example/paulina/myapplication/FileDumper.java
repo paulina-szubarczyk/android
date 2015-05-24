@@ -1,19 +1,23 @@
 package com.example.paulina.myapplication;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Environment;
+import android.provider.MediaStore;
 
 import org.opencv.core.Mat;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class FileDumper {
 
     private String camera_name;
-    final private int FILE_LIMIT = 10;
+    final private int FILE_LIMIT = 1;
     private int counter = 0;
 
     private File dir;
@@ -53,9 +57,9 @@ public class FileDumper {
         dir.setReadable(true, false);
     }
 
-    private File prepareFile() {
+    private File prepareFile(String suffix) {
         Integer timestamp = (int)(System.currentTimeMillis()/1000);
-        String file_name = camera_name+timestamp.toString()+".txt";
+        String file_name = camera_name+timestamp.toString()+suffix;
 
         File file = new File(dir,file_name);
         file.setReadable(true,false);
@@ -68,12 +72,12 @@ public class FileDumper {
 
     public void dumpScreen(int[] data, int width, int height) {
 
-        if (mExternalStorageWriteable && counter > FILE_LIMIT)
+        if (!dumpingScreen())
             return;
 
         try {
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter(prepareFile()));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(prepareFile(".txt")));
             String header = String.format("w: %d, h: %d, l: %d \n",width,height,data.length);
             writer.write(header);
 
@@ -92,6 +96,10 @@ public class FileDumper {
     }
 
 
+    public boolean dumpingScreen() {
+        return !(mExternalStorageWriteable && counter > FILE_LIMIT);
+    }
+
     public void dumpScreen(Mat data, int width, int height) {
 
         if (mExternalStorageWriteable && counter > FILE_LIMIT)
@@ -99,7 +107,7 @@ public class FileDumper {
 
         try {
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter(prepareFile()));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(prepareFile(".txt")));
             String header = String.format("w: %d, h: %d \n",width,height);
             writer.write(header);
             writer.write(data.dump());
@@ -112,4 +120,19 @@ public class FileDumper {
         }
     }
 
+    public void takePicture(Bitmap pictureBitmap) {
+
+        OutputStream fOut;
+        try {
+            fOut = new FileOutputStream(prepareFile(".jpg"));
+            pictureBitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
+            fOut.flush();
+            fOut.close();
+            System.out.println("Smile!!!");
+
+        } catch (IOException e ){
+            System.out.println(":( " + e.getMessage());
+
+        }
+    }
 }
