@@ -9,6 +9,7 @@ import org.opencv.core.Core;
 import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
@@ -24,6 +25,18 @@ public class TemperatureConverter {
     private float maxTemperature;
     private int mode;
     private int[] legend;
+    private int rectX1;
+    private int rectY1;
+    private int rectX2;
+    private int rectY2;
+    private int lineX1;
+    private int lineY1;
+    private int lineX2;
+    private int lineY2;
+
+    private final int histogram[] = new int[256];
+    private float gradient[];
+    private final TemperatureRectangleData tempRectData = new TemperatureRectangleData();
 
     private FileDumper fileDumper;
 
@@ -54,6 +67,9 @@ public class TemperatureConverter {
 
         Mat mat = new Mat(height, width, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
+
+        analyzeRectangle(mat);
+        analyzeGradient(mat);
         mat = this.scaleTemperatue(mat);
         mat = postprocess(mat);
         return createBitmapInColorMap(mat);
@@ -105,6 +121,21 @@ public class TemperatureConverter {
         return mat;
     }
 
+    public void setAnalysedRectangle(int x1, int y1, int x2, int y2) {
+        this.rectX1 = x1;
+        this.rectY1 = y1;
+        this.rectX2 = x2;
+        this.rectY2 = y2;
+    }
+
+    public void setGradientLine(int x1, int y1, int x2, int y2) {
+
+        this.lineX1 = x1;
+        this.lineY1 = y1;
+        this.lineX2 = x2;
+        this.lineY2 = y2;
+    }
+
     private Mat postprocess(Mat mat) {
 
         Imgproc.medianBlur(mat,mat,3);
@@ -125,6 +156,48 @@ public class TemperatureConverter {
         legend = new int[LEGEND_SIZE];
         for(int i = 0; i < LEGEND_SIZE; ++i) {
             legend[i] = i;
+        }
+    }
+
+    private void analyzeRectangle(Mat mat) {
+        Mat roi = mat.adjustROI(rectY1, rectY2, rectX1, rectX2);
+
+        Core.MinMaxLocResult result = Core.minMaxLoc(mat);
+        tempRectData.tMax = (float)result.maxVal / this.TEMPERATURE_SCALE;
+        tempRectData.xMax = (int)result.maxLoc.x;
+        tempRectData.yMax = (int)result.maxLoc.y;
+        tempRectData.tMin = (float)result.minVal / this.TEMPERATURE_SCALE;
+        tempRectData.xMin = (int)result.minLoc.x;
+        tempRectData.yMin = (int)result.minLoc.y;
+    }
+
+    private void analyzeGradient(Mat mat) {
+
+        Mat floatMat = new Mat(mat.rows(), mat.cols(), CvType.CV_32FC1);
+        Core.multiply(floatMat, new Scalar(1 / this.TEMPERATURE_SCALE), floatMat);
+
+        int xSpan = Math.abs(lineX1 - lineX2);
+        int ySpan = Math.abs(lineY1 - lineY2);
+        gradient = new float[Math.max(xSpan, ySpan) - 1];
+
+        int xStep = (int)Math.signum(lineX1 - lineX2);
+        int yStep = (int)Math.signum(lineY1 - lineY2);
+
+        int lastX = lineX1;
+        int lastY = lineY1;
+        int currentX = lineX1 + xStep;
+        int currentY = lineY1 + yStep;
+        int idx = 0;
+        double stepLength = Math.sqrt(xStep*xStep + yStep*yStep);
+        while(currentX != lineX2 || currentY != lineY2) {
+
+            double grad = floatMat.get(currentY, currentX)[0] - floatMat.get(lastY, lastX)[0];
+            gradient[idx] = (float)(grad / stepLength);
+            lastX = currentX;
+            lastY = currentY;
+            currentX += xStep;
+            currentY += yStep;
+            ++idx;
         }
     }
 
@@ -150,5 +223,9 @@ public class TemperatureConverter {
 
     public void setMaxTemperature(float maxTemperature) {
         this.maxTemperature = maxTemperature;
+    }
+
+    public TemperatureRectangleData getTempRectData() {
+        return tempRectData;
     }
 }
