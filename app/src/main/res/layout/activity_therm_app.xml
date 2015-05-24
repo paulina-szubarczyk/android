@@ -11,8 +11,8 @@
     <com.example.paulina.myapplication.RectangleView
         android:id="@+id/rectangle"
         android:foreground="#00000000"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:layout_gravity="center"
         android:visibility="visible"
         android:layout_below="@+id/legend"
@@ -21,8 +21,8 @@
     <ImageView
         android:id="@+id/camera_preview2"
         android:foreground="#00000000"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:layout_gravity="center"
         android:layout_below="@+id/legend"
         android:layout_alignParentBottom="true" />
@@ -40,15 +40,15 @@
     <ImageView
         android:id="@+id/imageView1"
         android:src="@drawable/background"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:adjustViewBounds="false"
         android:layout_gravity="center"
         android:layout_below="@+id/legend"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
     <TextView
         android:layout_width="20sp"
@@ -59,7 +59,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_above="@+id/rectangle"
-        android:textSize="15dp"
+        android:textSize="15sp"
         android:textIsSelectable="false"
         android:gravity="center" />
 
@@ -72,9 +72,52 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_above="@+id/rectangle"
-        android:textSize="15dp"
+        android:textSize="15sp"
         android:gravity="center"
         android:textIsSelectable="false" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/cursor"
+        android:src="@drawable/cursor"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rect_max"
+        android:layout_alignTop="@+id/cursor"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"
+        android:textSize="12sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/rect_min"
+        android:layout_alignTop="@+id/cursor"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"
+        android:textSize="12sp" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/min_cross"
+        android:src="@drawable/cross"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/max_cross"
+        android:src="@drawable/cross"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:cropToPadding="true" />
 
 
 </RelativeLayout>

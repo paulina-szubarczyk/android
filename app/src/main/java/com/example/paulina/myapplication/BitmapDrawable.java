@@ -1,6 +1,7 @@
 package com.example.paulina.myapplication;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.view.View;
 import android.widget.ImageView;
@@ -26,9 +27,11 @@ public class BitmapDrawable {
             public void run() {
                 imageView.setVisibility(View.VISIBLE);
 
-                imageView.setImageBitmap(Bitmap.createBitmap(bmp_ptr, 0, 0,
+                Bitmap bitmap = Bitmap.createBitmap(bmp_ptr, 0, 0,
                         bmp_ptr.getWidth(), bmp_ptr.getHeight(), matrix_rot_90,
-                        true));
+                        true);
+                imageView.setImageBitmap(bitmap);
+
             }
         };
     }
@@ -47,7 +50,7 @@ public class BitmapDrawable {
         imageView = view;
         imageView.bringToFront();
         matrix_rot_90 = new Matrix();
-        matrix_rot_90.postRotate( 90 );
+//        matrix_rot_90.postRotate( 90 );
     }
 
     public void pause() {

@@ -21,7 +21,7 @@ public class ApplicationTest {
     @Test
     public void temperatureConverterTest() {
 
-        TemperatureConverter converter = new TemperatureConverter();
+      //  TemperatureConverter converter = new TemperatureConverter();
         int width = 3;
         int height = 2;
         int[] img = new int[6];

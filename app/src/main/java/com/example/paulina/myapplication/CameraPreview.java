@@ -60,7 +60,7 @@ public class CameraPreview implements Camera.PreviewCallback {
         surfaceDrawer.post(bitmap);
 
         if(TAKE_PHOTO) {
-            fileDumper.dumpScreen(array, yuvConfig.getWidth(), yuvConfig.getHeight());
+//            fileDumper.dumpScreen(array, yuvConfig.getWidth(), yuvConfig.getHeight());
             fileDumper.takePicture(bitmap);
             TAKE_PHOTO = false;
         }

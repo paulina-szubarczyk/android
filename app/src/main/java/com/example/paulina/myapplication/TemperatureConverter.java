@@ -2,6 +2,7 @@ package com.example.paulina.myapplication;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.RectF;
 import android.util.Log;
 
 import org.opencv.android.Utils;
@@ -16,6 +17,7 @@ import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.features2d.DescriptorExtractor;
@@ -26,8 +28,10 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
-public class TemperatureConverter {
+public class TemperatureConverter implements Observer{
     public static final int MODE_CONSTANT = 1;
     public static final int MODE_ADAPTIVE = 2;
     public static final int LEGEND_SIZE = 256;
@@ -81,6 +85,7 @@ public class TemperatureConverter {
     public void init() {
         maxTemperature = minTemperature = 0;
         fileDumper = new FileDumper("temperature");
+        temperatureImg = new Mat();
         createLegend();
     }
 
@@ -89,15 +94,17 @@ public class TemperatureConverter {
 
         Mat mat = new Mat(height, width, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
+        mat = mat.t();
 
-//        analyzeRectangle(mat);
+
 //        analyzeGradient(mat);
         mat = this.scaleTemperatue(mat);
 
+        mat = postprocess(mat);
+        analyzeRectangle(mat);
+
         // save image for correspondence checking
         Imgproc.resize(mat, temperatureImg, new Size(mat.rows() / 2, mat.cols() / 2));
-
-        mat = postprocess(mat);
 
         computeHistogram(mat);
 
@@ -127,7 +134,7 @@ public class TemperatureConverter {
 
         mat.convertTo(mat, CvType.CV_32FC1);
         Core.multiply(mat, new Scalar(1.0f / this.TEMPERATURE_SCALE), mat);
-        Core.flip(mat,mat,0);
+
         if(this.mode == this.MODE_ADAPTIVE) {
             Core.MinMaxLocResult result = Core.minMaxLoc(mat);
             maxTemp = (float)result.maxVal;
@@ -191,13 +198,13 @@ public class TemperatureConverter {
     private void analyzeRectangle(Mat mat) {
         Mat roi = mat.adjustROI(rectY1, rectY2, rectX1, rectX2);
 
-        Core.MinMaxLocResult result = Core.minMaxLoc(mat);
-        tempRectData.tMax = (float)result.maxVal / this.TEMPERATURE_SCALE;
-        tempRectData.xMax = (int)result.maxLoc.x;
-        tempRectData.yMax = (int)result.maxLoc.y;
-        tempRectData.tMin = (float)result.minVal / this.TEMPERATURE_SCALE;
-        tempRectData.xMin = (int)result.minLoc.x;
-        tempRectData.yMin = (int)result.minLoc.y;
+        Core.MinMaxLocResult result = Core.minMaxLoc(roi);
+        tempRectData.tMax = (float)result.maxVal ;
+        tempRectData.xMax = (int)result.maxLoc.x + rectX1;
+        tempRectData.yMax = (int)result.maxLoc.y + rectY1;
+        tempRectData.tMin = (float)result.minVal ;
+        tempRectData.xMin = (int)result.minLoc.x + rectX1;
+        tempRectData.yMin = (int)result.minLoc.y + rectY1;
     }
 
     private void analyzeGradient(Mat mat) {
@@ -314,9 +321,18 @@ public class TemperatureConverter {
         return tempRectData;
     }
 
+
     public int[] getHistogram() {
         int[] hist = new int[histogram.rows() * histogram.cols()];
         histogram.get(0, 0, hist);
         return hist;
+    }
+
+    @Override
+    public void update(Observable observable, Object data) {
+        if(observable instanceof RectangleView.MRect) {
+            RectF rect = ((RectangleView.MRect) observable).getRectangle();
+            setAnalysedRectangle((int)rect.left,(int)rect.top,(int)rect.right,(int)rect.bottom );
+        }
     }
 }

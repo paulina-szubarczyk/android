@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.RectF;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.view.Menu;
@@ -36,7 +37,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     private FileDumper fileDumper;
     private TemperatureConverter temperature;
     private boolean TAKE_PHOTO;
-
+    private  TextUpdater max_minText;
     enum VIEW_MODE {
         THERM_CAMERA,
         CAMERA,
@@ -65,7 +66,12 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         relativeLayout = (RelativeLayout) findViewById(R.id.main);
         rectangleView.setVisibility(View.INVISIBLE);
         relativeLayout.invalidate();
+        rectangleView.setCursor((ImageView) findViewById(R.id.cursor));
+        RectF rect = rectangleView.getRectangle().getRectangle();
+        temperature.setAnalysedRectangle((int) rect.left, (int)rect.top,(int)rect.right,(int)rect.bottom );
+        rectangleView.addObserver(temperature);
         drawLegend();
+        createMaxMinRnbl();
     }
 
 
@@ -79,7 +85,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     @Override
     protected void onPause() {
         mDrawer.pause();
-
+        max_minText.pause();
         super.onPause();
     }
 
@@ -129,6 +135,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
                     rectangleView.setVisibility(View.VISIBLE);
                 else
                     rectangleView.setVisibility(View.INVISIBLE);
+                rectangleView.bringToFront();
                 return true;
             case R.id.photo:
                 if(mode == VIEW_MODE.CAMERA && cameraView != null)
@@ -229,18 +236,31 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         legend.setImageBitmap(temperature.getLegend(20));
         TextView min = (TextView) findViewById(R.id.min_legend);
         TextView max = (TextView) findViewById(R.id.max_legend);
-//        min.setText((int)temperature.getMinTemperature());
-//        max.setText((int)temperature.getMaxTemperature());
+        min.setText(String.format("%f",temperature.getMinTemperature()));
+        max.setText(String.format("%f",temperature.getMaxTemperature()));
+    }
+
+    public void createMaxMinRnbl() {
+
+        max_minText = new TextUpdater();
+        max_minText.setMax((TextView) findViewById(R.id.rect_max));
+        max_minText.setMin((TextView) findViewById(R.id.rect_min));
+        max_minText.setMin_cross((ImageView) findViewById(R.id.min_cross));
+        max_minText.setMax_cross((ImageView) findViewById(R.id.max_cross));
+        max_minText.setTemperature(temperature);
     }
 
     @Override
     public void OnFrameGetThermAppTemperatures(int[] ints, int i, int i1) {
         Bitmap bitmap = temperature.convertTemperature(ints, i, i1);
         mDrawer.post(bitmap);
-        fileDumper.dumpScreen(ints, i, i1);
         if(TAKE_PHOTO) {
+//            fileDumper.dumpScreen(ints, i, i1);
             fileDumper.takePicture(bitmap);
             TAKE_PHOTO = false;
+        }
+        if(rectangleView.getVisibility() == View.VISIBLE) {
+            runOnUiThread(max_minText.rnbl);
         }
     }
 
