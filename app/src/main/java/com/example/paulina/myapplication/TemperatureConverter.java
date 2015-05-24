@@ -8,10 +8,24 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvException;
 import org.opencv.core.CvType;
+import org.opencv.core.DMatch;
+import org.opencv.core.KeyPoint;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDMatch;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.features2d.DescriptorExtractor;
+import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.FeatureDetector;
 import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class TemperatureConverter {
     public static final int MODE_CONSTANT = 1;
@@ -34,9 +48,17 @@ public class TemperatureConverter {
     private int lineX2;
     private int lineY2;
 
-    private final int histogram[] = new int[256];
+    private final Mat histogram = new Mat();
     private float gradient[];
     private final TemperatureRectangleData tempRectData = new TemperatureRectangleData();
+    private Mat temperatureImg;
+
+    private final FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
+    private final DescriptorExtractor descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);
+    private final DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
+
+    private static final double FRAC = 0.15;
+    private static final int DIST_LIMIT = 40;
 
     private FileDumper fileDumper;
 
@@ -71,7 +93,14 @@ public class TemperatureConverter {
 //        analyzeRectangle(mat);
 //        analyzeGradient(mat);
         mat = this.scaleTemperatue(mat);
+
+        // save image for correspondence checking
+        Imgproc.resize(mat, temperatureImg, new Size(mat.rows() / 2, mat.cols() / 2));
+
         mat = postprocess(mat);
+
+        computeHistogram(mat);
+
         return createBitmapInColorMap(mat);
     }
 
@@ -138,7 +167,7 @@ public class TemperatureConverter {
 
     private Mat postprocess(Mat mat) {
 
-        Imgproc.medianBlur(mat,mat,3);
+        Imgproc.medianBlur(mat, mat, 3);
 
         return mat;
     }
@@ -201,6 +230,58 @@ public class TemperatureConverter {
         }
     }
 
+    void estimateRelativeLocation(byte[] cameraBytes, int width, int height) {
+
+        Mat cameraMat = new Mat(height, width, CvType.CV_8UC3);
+        cameraMat.put(0, 0, cameraBytes);
+        Imgproc.cvtColor(cameraMat, cameraMat, Imgproc.COLOR_RGB2GRAY);
+        width /= 2;
+        height /= 2;
+        Imgproc.resize(cameraMat, cameraMat, new Size(height, width));
+
+        int x1 = (int)(FRAC * width);
+        int x2 = width - x1;
+        int y1 = (int)(FRAC * height);
+        int y2 = height - y1;
+        cameraMat = cameraMat.adjustROI(y1, y2, x1, x2);
+
+        MatOfKeyPoint tempKeypoints = new MatOfKeyPoint();
+        MatOfKeyPoint camKeypoints = new MatOfKeyPoint();
+        Mat tempDescriptors = new Mat();
+        Mat camDescriptors = new Mat();
+        MatOfDMatch  matches = new MatOfDMatch();
+
+        detector.detect(temperatureImg, tempKeypoints);
+        descriptor.compute(temperatureImg, tempKeypoints, tempDescriptors);
+
+        detector.detect(cameraMat, camKeypoints);
+        descriptor.compute(cameraMat, camKeypoints, camDescriptors);
+
+        matcher.match(camDescriptors, tempDescriptors, matches);
+
+        List<DMatch> matchList = matches.toList();
+        List<DMatch> finalMatchList = new ArrayList<DMatch>();
+        for(DMatch match : matchList) {
+            if(match.distance < DIST_LIMIT) {
+                finalMatchList.add(match);
+            }
+        }
+
+
+
+    }
+
+    private void computeHistogram(Mat mat) {
+
+        List<Mat> matList = Collections.singletonList(mat);
+        MatOfInt channels = new MatOfInt(0);
+        Mat mask = new Mat();
+        MatOfInt histSize = new MatOfInt(256);
+        MatOfFloat ranges = new MatOfFloat(0, 256);
+
+        Imgproc.calcHist(matList, channels, mask, histogram, histSize, ranges);
+    }
+
     public ColorMap getColorMap() {
         return colorMap;
     }
@@ -227,5 +308,11 @@ public class TemperatureConverter {
 
     public TemperatureRectangleData getTempRectData() {
         return tempRectData;
+    }
+
+    public int[] getHistogram() {
+        int[] hist = new int[histogram.rows() * histogram.cols()];
+        histogram.get(0, 0, hist);
+        return hist;
     }
 }
