@@ -3,6 +3,7 @@ package com.example.paulina.myapplication;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Environment;
@@ -33,7 +34,7 @@ public class CameraPreview implements Camera.PreviewCallback {
         mCamera.setPreviewCallback(this);
         mCamera.startPreview();
 
-        yuvConfig = new YuvConfig(mCamera.getParameters(), 0.15, 0.85, 50);
+        yuvConfig = new YuvConfig(mCamera.getParameters(), 0.15, 0.85, 90);
         surfaceDrawer = new BitmapDrawable((ImageView) activity.findViewById(R.id.camera_preview2));
         fileDumper = new FileDumper("camera");
         TAKE_PHOTO = false;
@@ -57,9 +58,9 @@ public class CameraPreview implements Camera.PreviewCallback {
         intBuf.get(array);
         Bitmap bitmap = yuvConfig.compressToBitmap(data);
         surfaceDrawer.post(bitmap);
-        fileDumper.dumpScreen(array, yuvConfig.getWidth(), yuvConfig.getHeight());
 
         if(TAKE_PHOTO) {
+            fileDumper.dumpScreen(array, yuvConfig.getWidth(), yuvConfig.getHeight());
             fileDumper.takePicture(bitmap);
             TAKE_PHOTO = false;
         }

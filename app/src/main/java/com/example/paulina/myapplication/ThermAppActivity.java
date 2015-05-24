@@ -63,9 +63,8 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     private void mainActivity() {
         rectangleView = (RectangleView) findViewById(R.id.rectangle);
         relativeLayout = (RelativeLayout) findViewById(R.id.main);
-        rectangleView.bringToFront();
+        rectangleView.setVisibility(View.INVISIBLE);
         relativeLayout.invalidate();
-        rectangleView.visibilityStatus();
         drawLegend();
     }
 
@@ -105,28 +104,11 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = event.getAction();
-        float x = event.getX();
-        float y = event.getY();
-
-        rectangleView.invalidate();
-
-        if(rectangleView.isChangeable()) {
-            if (action == MotionEvent.ACTION_DOWN) {
-
-                if (rectangleView.getRectangle().contains(x, y)) {
-                    rectangleView.getRectangle().scale(false); // true is scale up, false is scale down
-                }
-            }
-            if (action == MotionEvent.ACTION_UP) {
-                if (rectangleView.getRectangle().contains(x, y)) {
-                    rectangleView.getRectangle().scale(true); // true is scale up, false is scale down
-                }
-            }
-        }
 
         return true;
     }
+
+
     public Menu getMenu() {
         return mMenu;
     }

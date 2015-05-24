@@ -12,6 +12,7 @@ import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.MotionEvent;
 import android.view.View;
 
 import org.opencv.core.Rect;
@@ -156,14 +157,37 @@ public class RectangleView extends View {
         super.onRestoreInstanceState(state);
     }
 
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        if (changeable) {
+            int action = event.getAction();
+            float x = event.getX();
+            float y = event.getY();
+
+            invalidate();
+            if (action == MotionEvent.ACTION_DOWN) {
+
+                if (getRectangle().contains(x, y)) {
+                    getRectangle().scale(false); // true is scale up, false is scale down
+                }
+            }
+            if (action == MotionEvent.ACTION_UP) {
+                if (getRectangle().contains(x, y)) {
+                    getRectangle().scale(true);
+                }
+            }
+        }
+        return true;
+    }
+
     enum State {
         INSTANCE_SAVE,
         STATE_TO_SAVE,
         SCALE,
         CHANGEABLE
     }
-
-
 }
 
 

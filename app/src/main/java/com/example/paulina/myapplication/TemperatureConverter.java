@@ -68,8 +68,8 @@ public class TemperatureConverter {
         Mat mat = new Mat(height, width, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
 
-        analyzeRectangle(mat);
-        analyzeGradient(mat);
+//        analyzeRectangle(mat);
+//        analyzeGradient(mat);
         mat = this.scaleTemperatue(mat);
         mat = postprocess(mat);
         return createBitmapInColorMap(mat);
@@ -98,7 +98,7 @@ public class TemperatureConverter {
 
         mat.convertTo(mat, CvType.CV_32FC1);
         Core.multiply(mat, new Scalar(1.0f / this.TEMPERATURE_SCALE), mat);
-
+        Core.flip(mat,mat,0);
         if(this.mode == this.MODE_ADAPTIVE) {
             Core.MinMaxLocResult result = Core.minMaxLoc(mat);
             maxTemp = (float)result.maxVal;
