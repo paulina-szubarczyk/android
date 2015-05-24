@@ -8,7 +8,7 @@ function temperature()
     height = 288;
     
     data = reshape(data, width, height)';
-%     data = data / 100;
+%     data = data / 100;307
     
     maxTemp = max(data(:));
     minTemp = min(data(:));

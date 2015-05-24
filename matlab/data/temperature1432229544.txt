@@ -1,0 +1,2 @@
+w: 288, h: 384, l: 95 
+Mat [ 384*288*CV_8UC3, isCont=true, isSubmat=false, nativeObj=0x4e45b370, dataAddr=0x54569010 ]
