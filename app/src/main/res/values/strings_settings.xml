@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pref_header_measure">POMIAR</string>
+
+    <string name="rectangle_settings">Pomiar na prostokącie</string>
+    <string name="rectangle_changeable">Edytuj rozmiar i położenie</string>
+    <string name="rectangle_default">Prywróć domyślny obszar</string>
+    
+    <string name="block_scale">Zablokuj skalę pomiaru</string>
+
+    <string name="pref_header_camera">KAMERA</string>
+    <string name="enable_camera">Kamera</string>
+    <string name="enable_camera_summary">Włączenie kamery telefonu</string>
+    <string name="overlay_cameras">2 kamery</string>
+    <string name="overlay_cameras_summary">Nałożenie obrazów z kamer termowizyjnej i wbudowanej</string>
+
+    <string name="pref_header_pallet">OBRAZ</string>
+    <string name="pref_pallet">Paleta barw</string>
+    <string-array name="pallet_options">
+        <item>AUTUMN</item>
+        <item>BONE</item>
+        <item>COOL</item>
+        <item>HOT</item>
+        <item>HSV</item>
+        <item>JET</item>
+        <item>OCEAN</item>
+        <item>PINK</item>
+        <item>RAINBOW</item>
+        <item>SPRING</item>
+        <item>SUMMER</item>
+        <item>WINTER</item>
+    </string-array>
+    <string-array name="pallet_options_values">
+        <item>AUTUMN</item>
+        <item>BONE</item>
+        <item>COOL</item>
+        <item>HOT</item>
+        <item>HSV</item>
+        <item>JET</item>
+        <item>OCEAN</item>
+        <item>PINK</item>
+        <item>RAINBOW</item>
+        <item>SPRING</item>
+        <item>SUMMER</item>
+        <item>WINTER</item>
+    </string-array>
+
+    <string name="pref_header_analyse">Analiza obrazu</string>
+
+    <string name="pallet_key">k1</string>
+    <string name="analyse_key">k2</string>
+    <string name="cam1_key">k3</string>
+    <string name="cam2_key">k4</string>
+    <string name="rectangle_key">k5</string>
+    <string name="changeable_key">k6</string>
+    <string name="default_key">k7</string>
+    <string name="block_key">k8</string>
+
+</resources>

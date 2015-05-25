@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:key="@string/cam1_key"
+        android:summary="@string/enable_camera_summary"
+        android:title="@string/enable_camera"
+        android:defaultValue="false"
+        />
+    <SwitchPreference
+        android:key="@string/cam2_key"
+        android:summary="@string/overlay_cameras_summary"
+        android:title="@string/overlay_cameras"
+        android:defaultValue="false"
+        />
+</PreferenceScreen>

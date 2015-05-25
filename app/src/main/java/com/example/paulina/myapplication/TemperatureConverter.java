@@ -3,6 +3,8 @@ package com.example.paulina.myapplication;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
+import android.preference.ListPreference;
+import android.preference.Preference;
 import android.util.Log;
 
 import org.opencv.android.Utils;
@@ -10,14 +12,12 @@ import org.opencv.core.Core;
 import org.opencv.core.CvException;
 import org.opencv.core.CvType;
 import org.opencv.core.DMatch;
-import org.opencv.core.KeyPoint;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfKeyPoint;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.features2d.DescriptorExtractor;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class TemperatureConverter implements Observer{
+public class TemperatureConverter implements Observer  {
     public static final int MODE_CONSTANT = 1;
     public static final int MODE_ADAPTIVE = 2;
     public static final int LEGEND_SIZE = 256;
@@ -55,6 +55,7 @@ public class TemperatureConverter implements Observer{
     private float gradient[];
     private final TemperatureRectangleData tempRectData = new TemperatureRectangleData();
     private Mat temperatureImg;
+    private Context context;
 
     private final FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
     private final DescriptorExtractor descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);
@@ -63,7 +64,7 @@ public class TemperatureConverter implements Observer{
     private static final double FRAC = 0.15;
     private static final int DIST_LIMIT = 40;
 
-    private boolean TAKE_TEMERATURE;
+    private boolean TAKE_TEMPERATURE;
     private FileDumper fileDumper;
 
     public TemperatureConverter(ColorMap colorMap, int mode, Context context) {
@@ -72,18 +73,20 @@ public class TemperatureConverter implements Observer{
             throw new IllegalArgumentException("Invalid mode");
         }
         this.mode = mode;
-        init();
+        init(context);
     }
 
 
     public TemperatureConverter(Context context) {
+
         this.colorMap = ColorMap.HOT;
-        this.mode = MODE_CONSTANT;
-        this.TAKE_TEMERATURE = true;
-        init();
+        this.mode = MODE_ADAPTIVE;
+        this.TAKE_TEMPERATURE = false;
+        init(context);
     }
 
-    public void init() {
+    public void init(Context context) {
+        this.context = context;
         maxTemperature = minTemperature = 0;
         fileDumper = new FileDumper("temperature");
         temperatureImg = new Mat();
@@ -136,11 +139,12 @@ public class TemperatureConverter implements Observer{
         mat.convertTo(mat, CvType.CV_32FC1);
         Core.multiply(mat, new Scalar(1.0f / this.TEMPERATURE_SCALE), mat);
 
-        if(this.mode == this.MODE_ADAPTIVE ||this.TAKE_TEMERATURE) {
+        if(this.mode == this.MODE_ADAPTIVE ||this.TAKE_TEMPERATURE) {
             Core.MinMaxLocResult result = Core.minMaxLoc(mat);
             this.maxTemperature = maxTemp = (float)result.maxVal;
             this.minTemperature = minTemp = (float)result.minVal;
-            this.TAKE_TEMERATURE = false;
+            this.TAKE_TEMPERATURE = false;
+            this.mode = this.MODE_CONSTANT;
         }
 
         Core.subtract(mat, new Scalar(minTemp), mat);
@@ -217,7 +221,8 @@ public class TemperatureConverter implements Observer{
 
         int xSpan = Math.abs(lineX1 - lineX2);
         int ySpan = Math.abs(lineY1 - lineY2);
-        gradient = new float[Math.max(xSpan, ySpan)-1];
+        int size = Math.max(xSpan, ySpan)-1;
+        gradient = new float[size];
 
         int xStep = (int)Math.signum(lineX2 - lineX1);
         int yStep = (int)Math.signum(lineY2 - lineY1);
@@ -228,7 +233,7 @@ public class TemperatureConverter implements Observer{
         int currentY = lineY1 + yStep;
         int idx = 0;
         double stepLength = Math.sqrt(xStep*xStep + yStep*yStep);
-        while(currentX != lineX2 || currentY != lineY2) {
+        while(currentX != lineX2 || currentY != lineY2 && idx < size) {
 
             double grad = floatMat.get(currentY, currentX)[0] - floatMat.get(lastY, lastX)[0];
             gradient[idx] = (float)(grad / stepLength);
@@ -356,6 +361,19 @@ public class TemperatureConverter implements Observer{
                     (int) rect.top * HEIGHT / imgHEIGHT,
                     (int) rect.left * WIDTH / imgWIDTH,
                     (int) rect.bottom * HEIGHT / imgHEIGHT);
+        }
+    }
+
+
+    public boolean isAdaptiveMode() {
+        return mode == MODE_ADAPTIVE;
+    }
+
+    public void setAdaptiveMode(boolean mode) {
+        if (mode && isAdaptiveMode()) {
+            this.TAKE_TEMPERATURE = true;
+        } else if (!mode && !isAdaptiveMode()) {
+            this.mode = MODE_ADAPTIVE;
         }
     }
 }

@@ -127,5 +127,9 @@
         android:layout_alignBottom="@+id/rectangle"
         android:layout_centerHorizontal="true" />
 
-
+    <TextView
+        android:id="@+id/textUserSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </TextView>
 </RelativeLayout>

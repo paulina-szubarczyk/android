@@ -35,7 +35,7 @@ public class CameraPreview implements Camera.PreviewCallback {
         mCamera.startPreview();
 
         yuvConfig = new YuvConfig(mCamera.getParameters(), 0.15, 0.85, 90);
-        surfaceDrawer = new BitmapDrawable((ImageView) activity.findViewById(R.id.camera_preview2));
+        surfaceDrawer = new BitmapDrawable((ImageView) activity.findViewById(R.id.camera_preview2),true);
         fileDumper = new FileDumper("camera");
         TAKE_PHOTO = false;
     }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="@string/rectangle_key"
+        android:title="Obszar"
+        android:summary="@string/rectangle_settings"
+        android:defaultValue="false"
+        />
+    <CheckBoxPreference
+        android:dependency="@string/rectangle_key"
+        android:key="@string/changeable_key"
+        android:title="@string/rectangle_changeable"
+        android:defaultValue="false"
+        />
+    <CheckBoxPreference
+        android:dependency="@string/rectangle_key"
+        android:key="@string/default_key"
+        android:title="@string/rectangle_default"
+        android:defaultValue="false"
+        />
+    <SwitchPreference
+        android:key="@string/block_key"
+        android:title="Skala"
+        android:summary="@string/block_scale"
+        android:defaultValue="false"
+        />
+
+</PreferenceScreen>

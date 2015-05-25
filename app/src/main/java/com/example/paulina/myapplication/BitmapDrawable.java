@@ -46,11 +46,13 @@ public class BitmapDrawable {
 
     }
 
-    BitmapDrawable(ImageView view) {
+    BitmapDrawable(ImageView view, boolean rotate) {
         imageView = view;
         imageView.bringToFront();
         matrix_rot_90 = new Matrix();
-//        matrix_rot_90.postRotate( 90 );
+        if(rotate) {
+            matrix_rot_90.postRotate( 90 );
+        }
     }
 
     public void pause() {

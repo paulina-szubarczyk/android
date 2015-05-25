@@ -48,7 +48,7 @@ public class CameraView {
 
         Log.d(getClass().toString(), "Camera ");
         mainActivity = activity;
-        mItem = mainActivity.getMenu().findItem(R.id.camera);
+//        mItem = mainActivity.getMenu().findItem(R.id.camera);
         checkCameraHardware(mainActivity.getApplicationContext());
     }
 

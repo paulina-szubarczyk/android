@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:key="@string/pallet_key"
+        android:title="@string/pref_pallet"
+        android:entries="@array/pallet_options"
+        android:entryValues="@array/pallet_options_values"
+        android:defaultValue="HOT"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
+    <Preference
+        android:key="@string/analyse_key"
+        android:title="@string/pref_header_analyse" />
+
+</PreferenceScreen>

@@ -2,22 +2,12 @@
 <resources>
 
     <string name="app_name">ThermApp</string>
-    <string name="action_settings">Settings</string>
-    <string name="action_search"> </string>
-    <string name="title_activity_ac_tst">AcTST</string>
-    <string name="title_activity_ftpdownload">FTPDownload</string>
-    <string name="title_activity_display_message">DisplayMessage</string>
-    <string name="title_activity_camera">DeviceCamera</string>
-    <string name="title_activity_settings">Settings</string>
-    <string name="title_activity_splah_screen">SplahScreen</string>
-    <string name="title_activity_slpash">Slpash</string>
-    <string name="title_activity_terms_of_use">TermsOfUse</string>
+    <string name="action_settings">Ustawienia</string>
     <string name="title_activity_therm_app">ThermApp</string>
     <string name="camera">Camera</string>
     <string name="therm_camera">Therm Camera</string>
     <string name="rectangle">Rectangle</string>
-    <string name="photo">Photo</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="photo">Zapis obrazu</string>
     <string name="title_activity_therm_data">ThermApp</string>
 
 </resources>

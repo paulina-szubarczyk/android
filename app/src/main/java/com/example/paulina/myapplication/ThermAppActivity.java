@@ -5,10 +5,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -36,6 +38,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     private BitmapDrawable mDrawer;
     private FileDumper fileDumper;
     private TemperatureConverter temperature;
+    private Legend legend;
     private boolean TAKE_PHOTO;
     private  TextUpdater max_minText;
     enum VIEW_MODE {
@@ -55,7 +58,6 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_therm_app);
-
         mode = VIEW_MODE.THERM_CAMERA;
         thermCreate();
         mainActivity();
@@ -69,9 +71,10 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         rectangleView.setCursor((ImageView) findViewById(R.id.cursor));
         RectF rect = rectangleView.getRectangle().getRectangle();
         temperature.setAnalysedRectangle((int) rect.left, (int)rect.top,(int)rect.right-50,(int)rect.bottom-50);
-        temperature.setGradientLine((int)rect.left,(int)rect.top,(int)rect.left,(int)rect.bottom-50);
+        temperature.setGradientLine((int) rect.left, (int) rect.top, (int) rect.left, (int) rect.bottom - 50);
         rectangleView.addObserver(temperature);
-        drawLegend();
+        legend = new Legend(this,temperature);
+        legend.draw();
         createMaxMinRnbl();
     }
 
@@ -101,6 +104,20 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         super.onStop();
     }
 
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        temperature.setColorMap(ColorMap.fromString(
+                sharedPreferences.getString(getResources().getString(R.string.pallet_key), "")));
+        temperature.setAdaptiveMode(sharedPreferences.getBoolean(getResources().getString(R.string.block_key), false));
+
+        rectangleView.setChangeable(sharedPreferences.getBoolean(getResources().getString(R.string.changeable_key), false));
+        rectangleView.setToDefault(sharedPreferences.getBoolean(getResources().getString(R.string.default_key), false));
+        rectangleView.setVisible(sharedPreferences.getBoolean(getResources().getString(R.string.rectangle_key), false));
+
+        legend.draw();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -110,40 +127,32 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-        return true;
-    }
-
-
-    public Menu getMenu() {
-        return mMenu;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
 
         switch (item.getItemId()) {
-            case R.id.camera:
-                menageDeviceCamera();
-                return true;
-            case R.id.rectangle_button:
-                rectangleView.setChangeable(!rectangleView.isChangeable());
-                if(rectangleView.isChangeable())
-                    rectangleView.setVisibility(View.VISIBLE);
-                else
-                    rectangleView.setVisibility(View.INVISIBLE);
-                rectangleView.bringToFront();
-                return true;
+//            case R.id.camera:
+//                menageDeviceCamera();
+//                return true;
+//            case R.id.rectangle_button:
+//                rectangleView.setChangeable(!rectangleView.isChangeable());
+//                if(rectangleView.isChangeable())
+//                    rectangleView.setVisibility(View.VISIBLE);
+//                else
+//                    rectangleView.setVisibility(View.INVISIBLE);
+//                rectangleView.bringToFront();
+//                return true;
             case R.id.photo:
                 if(mode == VIEW_MODE.CAMERA && cameraView != null)
                     cameraView.takePhoto();
                 else if(mode == VIEW_MODE.THERM_CAMERA)
                     takePhoto();
                 return true;
+            case R.id.action_settings:
+                Intent intent = new Intent(this,SettingsActivity.class);
+                startActivity(intent);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -207,7 +216,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     }
 
     public void thermCreate() {
-        mDrawer = new BitmapDrawable((ImageView) findViewById(R.id.imageView1));
+        mDrawer = new BitmapDrawable((ImageView) findViewById(R.id.imageView1), false);
         temperature = new TemperatureConverter(getApplicationContext());
         fileDumper = new FileDumper("thermapp");
 
@@ -231,16 +240,6 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         }
     }
 
-
-    public void drawLegend() {
-        ImageView legend = (ImageView) findViewById(R.id.legend);
-        legend.setImageBitmap(temperature.getLegend(20));
-        TextView min = (TextView) findViewById(R.id.min_legend);
-        TextView max = (TextView) findViewById(R.id.max_legend);
-        min.setText(String.format("%f",temperature.getMinTemperature()));
-        max.setText(String.format("%f",temperature.getMaxTemperature()));
-    }
-
     public void createMaxMinRnbl() {
 
         max_minText = new TextUpdater();
@@ -258,6 +257,9 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     @Override
     public void OnFrameGetThermAppTemperatures(int[] ints, int i, int i1) {
         Bitmap bitmap = temperature.convertTemperature(ints, i, i1);
+        if(temperature.isAdaptiveMode()) {
+            runOnUiThread(legend.rnbl);
+        }
         mDrawer.post(bitmap);
         if(TAKE_PHOTO) {
 //            fileDumper.dumpScreen(ints, i, i1);
@@ -272,6 +274,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     public void startThermCamera(){
         try {
             mDeviceSdk.StartVideo();
+            legend.draw();
         } catch (Exception e) {
             // Report error to use
         }

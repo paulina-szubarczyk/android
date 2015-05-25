@@ -300,6 +300,21 @@ public class RectangleView extends View {
         rectangle.addObserver(observer);
     }
 
+    public void setVisible(boolean visible) {
+        if(visible) {
+            setVisibility(VISIBLE);
+            bringToFront();
+            invalidate();
+        } else {
+            setVisibility(INVISIBLE);
+        }
+    }
+
+    public void setToDefault(boolean val){
+        if(val) {
+            rectangle = new MRect(this);
+        }
+    }
     enum State {
         INSTANCE_SAVE,
         STATE_TO_SAVE,
