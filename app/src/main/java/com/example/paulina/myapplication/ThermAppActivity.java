@@ -68,7 +68,8 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         relativeLayout.invalidate();
         rectangleView.setCursor((ImageView) findViewById(R.id.cursor));
         RectF rect = rectangleView.getRectangle().getRectangle();
-        temperature.setAnalysedRectangle((int) rect.left, (int)rect.top,(int)rect.right,(int)rect.bottom );
+        temperature.setAnalysedRectangle((int) rect.left, (int)rect.top,(int)rect.right-50,(int)rect.bottom-50);
+        temperature.setGradientLine((int)rect.left,(int)rect.top,(int)rect.left,(int)rect.bottom-50);
         rectangleView.addObserver(temperature);
         drawLegend();
         createMaxMinRnbl();
@@ -245,9 +246,13 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         max_minText = new TextUpdater();
         max_minText.setMax((TextView) findViewById(R.id.rect_max));
         max_minText.setMin((TextView) findViewById(R.id.rect_min));
+        max_minText.setLog((TextView) findViewById(R.id.log));
+
         max_minText.setMin_cross((ImageView) findViewById(R.id.min_cross));
         max_minText.setMax_cross((ImageView) findViewById(R.id.max_cross));
         max_minText.setTemperature(temperature);
+
+        max_minText.setR(rectangleView.getRectangle().getRectangle());
     }
 
     @Override

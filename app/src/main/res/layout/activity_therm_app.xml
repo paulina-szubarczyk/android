@@ -119,5 +119,13 @@
         android:layout_centerHorizontal="true"
         android:cropToPadding="true" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:id="@+id/log"
+        android:layout_alignBottom="@+id/rectangle"
+        android:layout_centerHorizontal="true" />
+
 
 </RelativeLayout>

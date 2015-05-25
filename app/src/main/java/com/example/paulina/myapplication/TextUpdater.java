@@ -1,5 +1,6 @@
 package com.example.paulina.myapplication;
 
+import android.graphics.RectF;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -8,6 +9,7 @@ import android.widget.TextView;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
 
 public class TextUpdater {
 
@@ -17,42 +19,58 @@ public class TextUpdater {
 
     private TextView min;
     private TextView max;
+    private TextView log;
     private ImageView min_cross, max_cross;
     private TemperatureConverter temperature;
+    private RectF r;
 
     private Runnable rnblText() {
         return new Runnable() {
             public void run() {
 
                 TemperatureRectangleData rect =  temperature.getTempRectData();
+                RectF r2 = temperature.getRectF();
 
-                min.setText(String.format("%f, %d, %d", rect.tMin, rect.xMin, rect.yMin));
-                max.setText(String.format("%f, %d, %d", rect.tMax, rect.xMax, rect.yMax));
+                TemperatureRectangleData temp = new TemperatureRectangleData();
+                temp.xMin = rect.yMin + (int)r.left;
+                temp.yMin = rect.xMin + (int)r.top;
+                temp.xMax = rect.yMax + (int)r.left;
+                temp.yMax = rect.xMax + (int)r.top;
 
+                min.setText(String.format("%f", rect.tMin));
+                max.setText(String.format("%f", rect.tMax));
+                log.setText(String.format("MIN(%d,%d), MAX(%d,%d), R(%f,%f,%f,%f), R(%f,%f,%f,%f)",
+                        rect.xMin,rect.yMin,rect.xMax,rect.yMax,
+                        r.left,r.top,r.right,r.bottom,
+                        r2.left,r2.top,r2.right,r2.bottom));
 
-                min.setX(rect.xMin);
-                min.setY(rect.yMin);
+                min.setX(temp.xMin);
+                min.setY(temp.yMin);
                 min.bringToFront();
                 min.setVisibility(View.VISIBLE);
                 min.invalidate();
 
-                min_cross.setX(rect.xMin);
-                min_cross.setY(rect.yMin);
+                min_cross.setX(temp.xMin);
+                min_cross.setY(temp.yMin);
                 min_cross.bringToFront();
                 min_cross.setVisibility(View.VISIBLE);
                 min_cross.invalidate();
 
-                max.setX(rect.xMax);
-                max.setY(rect.yMax);
+                max.setX(temp.xMax);
+                max.setY(temp.yMax);
                 max.bringToFront();
                 max.setVisibility(View.VISIBLE);
                 max.invalidate();
 
-                max_cross.setX(rect.xMax);
-                max_cross.setY(rect.yMax);
+                max_cross.setX(temp.xMax);
+                max_cross.setY(temp.yMax);
                 max_cross.bringToFront();
                 max_cross.setVisibility(View.VISIBLE);
                 max_cross.invalidate();
+
+                log.bringToFront();
+                log.setVisibility(View.VISIBLE);
+                log.invalidate();
 
 
             }
@@ -84,4 +102,11 @@ public class TextUpdater {
         this.temperature = temperature;
     }
 
+    public void setLog(TextView log) {
+        this.log = log;
+    }
+
+    public void setR(RectF r) {
+        this.r = r;
+    }
 }

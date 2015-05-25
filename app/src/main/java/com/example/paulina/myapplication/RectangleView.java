@@ -31,15 +31,19 @@ public class RectangleView extends View {
     private ImageView cursor;
     public class MRect extends Observable {
 
+        private RectangleView view;
         private RectF rectangle;
         private double scaleX, scaleY;
         private double scale_amount ;
         private int height, width;
 
-        public MRect()
+        public MRect(RectangleView view)
         {
+            this.view = view;
             rectangle = new RectF(100,100,300,300);
             scaleX = scaleY = scale_amount = 0.5;
+            width = 480;
+            height = 650;
         }
         public void recalculate() {
 
@@ -55,8 +59,8 @@ public class RectangleView extends View {
                        -1 - scalowanie w obu kierunkach
          */
         public void scale(boolean up, int direction) {
-            height = getHeight();
-            width = getWidth();
+            height = view.getHeight();
+            width = view.getWidth();
 
             switch(direction) {
                 case 0:
@@ -82,8 +86,8 @@ public class RectangleView extends View {
         }
 
         public void move(float x, float y) {
-            height = getHeight();
-            width = getWidth();
+            height = view.getHeight();
+            width = view.getWidth();
 
             float move_x = (x - rectangle.centerX());
             float move_y = (y - rectangle.centerY());
@@ -134,6 +138,14 @@ public class RectangleView extends View {
 
         public boolean contains(float x, float y){ return rectangle.contains(x,y); }
         public RectF getRectangle() {return rectangle;}
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
     }
 
     public MRect getRectangle() {
@@ -166,7 +178,7 @@ public class RectangleView extends View {
         paint.setColor(Color.GREEN);
         paint.setStrokeWidth(4);
         paint.setStyle(Paint.Style.STROKE);
-        rectangle = new MRect();
+        rectangle = new MRect(this);
         changeable = false;
         setWillNotDraw(false);
     }

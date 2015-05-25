@@ -37,16 +37,15 @@ public class TemperatureConverter implements Observer{
     public static final int LEGEND_SIZE = 256;
 
     private static final int TEMPERATURE_SCALE = 100;
+    private static int WIDTH, HEIGHT;
+    private static int imgWIDTH, imgHEIGHT;
 
     private ColorMap colorMap;
     private float minTemperature;
     private float maxTemperature;
     private int mode;
     private int[] legend;
-    private int rectX1;
-    private int rectY1;
-    private int rectX2;
-    private int rectY2;
+    private RectF rectF;
     private int lineX1;
     private int lineY1;
     private int lineX2;
@@ -64,6 +63,7 @@ public class TemperatureConverter implements Observer{
     private static final double FRAC = 0.15;
     private static final int DIST_LIMIT = 40;
 
+    private boolean TAKE_TEMERATURE;
     private FileDumper fileDumper;
 
     public TemperatureConverter(ColorMap colorMap, int mode, Context context) {
@@ -78,7 +78,8 @@ public class TemperatureConverter implements Observer{
 
     public TemperatureConverter(Context context) {
         this.colorMap = ColorMap.HOT;
-        this.mode = MODE_ADAPTIVE;
+        this.mode = MODE_CONSTANT;
+        this.TAKE_TEMERATURE = true;
         init();
     }
 
@@ -91,17 +92,17 @@ public class TemperatureConverter implements Observer{
 
     public Bitmap convertTemperature(int[] temperature, int width, int height) {
 
+        WIDTH = width; HEIGHT = height;
 
         Mat mat = new Mat(height, width, CvType.CV_32SC1);
         mat.put(0, 0, temperature);
         mat = mat.t();
 
-
-//        analyzeGradient(mat);
-        mat = this.scaleTemperatue(mat);
-
-        mat = postprocess(mat);
         analyzeRectangle(mat);
+        analyzeGradient(mat);
+
+        mat = this.scaleTemperatue(mat);
+        mat = postprocess(mat);
 
         // save image for correspondence checking
         Imgproc.resize(mat, temperatureImg, new Size(mat.rows() / 2, mat.cols() / 2));
@@ -135,10 +136,11 @@ public class TemperatureConverter implements Observer{
         mat.convertTo(mat, CvType.CV_32FC1);
         Core.multiply(mat, new Scalar(1.0f / this.TEMPERATURE_SCALE), mat);
 
-        if(this.mode == this.MODE_ADAPTIVE) {
+        if(this.mode == this.MODE_ADAPTIVE ||this.TAKE_TEMERATURE) {
             Core.MinMaxLocResult result = Core.minMaxLoc(mat);
-            maxTemp = (float)result.maxVal;
-            minTemp = (float)result.minVal;
+            this.maxTemperature = maxTemp = (float)result.maxVal;
+            this.minTemperature = minTemp = (float)result.minVal;
+            this.TAKE_TEMERATURE = false;
         }
 
         Core.subtract(mat, new Scalar(minTemp), mat);
@@ -158,10 +160,7 @@ public class TemperatureConverter implements Observer{
     }
 
     public void setAnalysedRectangle(int x1, int y1, int x2, int y2) {
-        this.rectX1 = x1;
-        this.rectY1 = y1;
-        this.rectX2 = x2;
-        this.rectY2 = y2;
+        rectF = new RectF(x1,y1,x2,y2);
     }
 
     public void setGradientLine(int x1, int y1, int x2, int y2) {
@@ -196,15 +195,19 @@ public class TemperatureConverter implements Observer{
     }
 
     private void analyzeRectangle(Mat mat) {
-        Mat roi = mat.adjustROI(rectY1, rectY2, rectX1, rectX2);
+        Mat roi = mat.submat((int) rectF.left, (int) rectF.right, (int) rectF.top, (int) rectF.bottom);
 
         Core.MinMaxLocResult result = Core.minMaxLoc(roi);
-        tempRectData.tMax = (float)result.maxVal ;
-        tempRectData.xMax = (int)result.maxLoc.x + rectX1;
-        tempRectData.yMax = (int)result.maxLoc.y + rectY1;
-        tempRectData.tMin = (float)result.minVal ;
-        tempRectData.xMin = (int)result.minLoc.x + rectX1;
-        tempRectData.yMin = (int)result.minLoc.y + rectY1;
+        if(Math.abs(tempRectData.tMax - result.maxVal/100) > 0.1) {
+            tempRectData.tMax = (float) result.maxVal / 100;
+            tempRectData.yMax = (int) (result.maxLoc.x) * imgHEIGHT / HEIGHT;
+            tempRectData.xMax = (int) (result.maxLoc.y) * imgWIDTH / WIDTH;
+        }
+        if(Math.abs(tempRectData.tMin - result.minVal/100) > 0.1) {
+            tempRectData.tMin = (float) result.minVal / 100;
+            tempRectData.yMin = (int) (result.minLoc.x) * imgHEIGHT / HEIGHT;
+            tempRectData.xMin = (int) (result.minLoc.y) * imgWIDTH / WIDTH;
+        }
     }
 
     private void analyzeGradient(Mat mat) {
@@ -214,10 +217,10 @@ public class TemperatureConverter implements Observer{
 
         int xSpan = Math.abs(lineX1 - lineX2);
         int ySpan = Math.abs(lineY1 - lineY2);
-        gradient = new float[Math.max(xSpan, ySpan) - 1];
+        gradient = new float[Math.max(xSpan, ySpan)-1];
 
-        int xStep = (int)Math.signum(lineX1 - lineX2);
-        int yStep = (int)Math.signum(lineY1 - lineY2);
+        int xStep = (int)Math.signum(lineX2 - lineX1);
+        int yStep = (int)Math.signum(lineY2 - lineY1);
 
         int lastX = lineX1;
         int lastY = lineY1;
@@ -321,6 +324,9 @@ public class TemperatureConverter implements Observer{
         return tempRectData;
     }
 
+    public RectF getRectF() {
+        return rectF;
+    }
 
     public int[] getHistogram() {
         int[] hist = new int[histogram.rows() * histogram.cols()];
@@ -328,11 +334,28 @@ public class TemperatureConverter implements Observer{
         return hist;
     }
 
+    public float[] getGradient() {
+        return gradient;
+    }
+
     @Override
     public void update(Observable observable, Object data) {
         if(observable instanceof RectangleView.MRect) {
-            RectF rect = ((RectangleView.MRect) observable).getRectangle();
-            setAnalysedRectangle((int)rect.left,(int)rect.top,(int)rect.right,(int)rect.bottom );
+            RectangleView.MRect mRect = ((RectangleView.MRect) observable);
+            RectF rect = mRect.getRectangle();
+            imgWIDTH = mRect.getWidth();
+            imgHEIGHT = mRect.getHeight();
+            setAnalysedRectangle(
+                    (int)rect.left*WIDTH/imgWIDTH,
+                    (int)rect.top*HEIGHT/imgHEIGHT,
+                    (int)rect.right*WIDTH/imgWIDTH,
+                    (int)rect.bottom*HEIGHT/imgHEIGHT);
+
+            setGradientLine(
+                    (int) rect.left * WIDTH / imgWIDTH,
+                    (int) rect.top * HEIGHT / imgHEIGHT,
+                    (int) rect.left * WIDTH / imgWIDTH,
+                    (int) rect.bottom * HEIGHT / imgHEIGHT);
         }
     }
 }
