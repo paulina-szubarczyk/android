@@ -106,7 +106,14 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
 
     protected void onResume() {
         super.onResume();
+        
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        
+        boolean camera = sharedPreferences.getBoolean(getResources().getString(R.string.cam1), false);
+        boolean camera_overlay = sharedPreferences.getBoolean(getResources().getString(R.string.cam2), false);
+
+        menageDeviceCamera(camera,camera_overlay);
+        
         temperature.setColorMap(ColorMap.fromString(
                 sharedPreferences.getString(getResources().getString(R.string.pallet_key), "")));
         temperature.setAdaptiveMode(sharedPreferences.getBoolean(getResources().getString(R.string.block_key), false));
@@ -114,7 +121,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         rectangleView.setChangeable(sharedPreferences.getBoolean(getResources().getString(R.string.changeable_key), false));
         rectangleView.setToDefault(sharedPreferences.getBoolean(getResources().getString(R.string.default_key), false));
         rectangleView.setVisible(sharedPreferences.getBoolean(getResources().getString(R.string.rectangle_key), false));
-
+        
         legend.draw();
     }
 
@@ -128,22 +135,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
         switch (item.getItemId()) {
-//            case R.id.camera:
-//                menageDeviceCamera();
-//                return true;
-//            case R.id.rectangle_button:
-//                rectangleView.setChangeable(!rectangleView.isChangeable());
-//                if(rectangleView.isChangeable())
-//                    rectangleView.setVisibility(View.VISIBLE);
-//                else
-//                    rectangleView.setVisibility(View.INVISIBLE);
-//                rectangleView.bringToFront();
-//                return true;
             case R.id.photo:
                 if(mode == VIEW_MODE.CAMERA && cameraView != null)
                     cameraView.takePhoto();
@@ -159,12 +151,12 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
 
     }
 
-    public void menageDeviceCamera() {
+    public void menageDeviceCamera(boolean on, boolean overlay) {
 
         if(cameraView == null) {
             cameraView = new CameraView(this);
         }
-        if(cameraView.isOn()) {
+        if(cameraView.isOn() && !on) {
             cameraView.onPause();
             cameraView.setOn(false);
             rectangleView.bringToFront();
@@ -172,7 +164,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
 
             relativeLayout.invalidate();
             rectangleView.visibilityStatus();
-        } else {
+        } else if (!cameraView.isOn() && on) {
             cameraView.onCreate();
             cameraView.setOn(true);
             rectangleView.bringToFront();
