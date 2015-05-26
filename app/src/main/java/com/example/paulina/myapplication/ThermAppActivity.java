@@ -202,11 +202,10 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
 
     private boolean InitSdk() {
 
-        if(mDeviceSdk == null) {
-            mDeviceSdk = new ThermAppAPI(this);
-        }
-
         try {
+            if(mDeviceSdk == null) {
+                mDeviceSdk = new ThermAppAPI(this);
+            }
             mDeviceSdk.ConnectToDevice();
         } catch (Exception e) {
             mDeviceSdk = null;
