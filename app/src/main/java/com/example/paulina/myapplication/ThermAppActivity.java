@@ -13,15 +13,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
-
-import java.util.ArrayList;
 
 import thermapp.sdk.ThermAppAPI;
 import thermapp.sdk.ThermAppAPI_Callback;
@@ -118,7 +115,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         
         temperature.setColorMap(ColorMap.fromString(
                 sharedPreferences.getString(getResources().getString(R.string.pallet_key), "")));
-        temperature.setAdaptiveMode(sharedPreferences.getBoolean(getResources().getString(R.string.block_key), false));
+        temperature.setConstantMode(sharedPreferences.getBoolean(getResources().getString(R.string.block_key), false));
 
         rectangleView.setChangeable(sharedPreferences.getBoolean(getResources().getString(R.string.changeable_key), false));
         rectangleView.setToDefault(sharedPreferences.getBoolean(getResources().getString(R.string.default_key), false));

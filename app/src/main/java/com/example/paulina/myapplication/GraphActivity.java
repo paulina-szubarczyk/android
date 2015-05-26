@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.RadioGroup;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
@@ -32,18 +33,23 @@ public class GraphActivity extends Activity {
         gx = (GraphView)findViewById(R.id.gradient_x);
         LineGraphSeries<DataPoint> series_x = new LineGraphSeries<>(generateData(gradient_x));
         gx.addSeries(series_x);
+        gz.setVisibility(View.INVISIBLE);
 
         gy = (GraphView)findViewById(R.id.gradient_y);
         LineGraphSeries<DataPoint> series_y = new LineGraphSeries<>(generateData(gradient_y));
         gy.addSeries(series_y);
+        gy.setVisibility(View.INVISIBLE);
 
         gz = (GraphView)findViewById(R.id.gradient_z);
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(generateData(gradient));
         gz.addSeries(series);
+        gz.setVisibility(View.INVISIBLE);
 
         gh = (GraphView)findViewById(R.id.histogram);
-        LineGraphSeries<DataPoint> series_h = new LineGraphSeries<>(generateData(histogram));
+        BarGraphSeries<DataPoint> series_h = new BarGraphSeries<>(generateData(histogram));
         gh.addSeries(series_h);
+        gh.setVisibility(View.VISIBLE);
+
     }
 
     public DataPoint[] generateData(float[] array) {
@@ -63,7 +69,7 @@ public class GraphActivity extends Activity {
 
         DataPoint[] data = new DataPoint[array.length];
         for(int i=0; i < data.length; ++i) {
-            data[i] = new DataPoint(i,(int)array[i]);
+            data[i] = new DataPoint(i,(array[i]&0xFF));
         }
         return data;
     }

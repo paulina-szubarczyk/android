@@ -108,10 +108,9 @@ public class TemperatureConverter implements Observer  {
         mat = this.scaleTemperatue(mat);
         mat = postprocess(mat);
 
+        computeHistogram(mat);
         // save image for correspondence checking
         Imgproc.resize(mat, temperatureImg, new Size(mat.rows() / 2, mat.cols() / 2));
-
-        computeHistogram(mat);
 
         return createBitmapInColorMap(mat);
     }
@@ -174,10 +173,10 @@ public class TemperatureConverter implements Observer  {
 
     public void setGradientLine(int x1, int y1, int x2, int y2) {
 
-        this.lineX1 = x1;
-        this.lineY1 = y1;
-        this.lineX2 = x2;
-        this.lineY2 = y2;
+        this.lineX1 = (int)rectF.left;
+        this.lineY1 = (int)rectF.top;
+        this.lineX2 = (int)rectF.right;
+        this.lineY2 = (int)rectF.bottom;
     }
 
     private Mat postprocess(Mat mat) {
@@ -235,6 +234,7 @@ public class TemperatureConverter implements Observer  {
     private float[] analyzeGradient(Mat mat,int x1, int y1, int x2, int y2) {
 
         Mat floatMat = new Mat(mat.rows(), mat.cols(), CvType.CV_32FC1);
+        mat.convertTo(floatMat, CvType.CV_32FC1);
         Core.multiply(floatMat, new Scalar(1 / TEMPERATURE_SCALE), floatMat);
 
         int xSpan = Math.abs(x1 - x2);
@@ -399,10 +399,10 @@ public class TemperatureConverter implements Observer  {
         return mode == MODE_ADAPTIVE;
     }
 
-    public void setAdaptiveMode(boolean mode) {
-        if (!mode && isAdaptiveMode()) {
+    public void setConstantMode(boolean mode) {
+        if (mode && isAdaptiveMode()) {
             this.TAKE_TEMPERATURE = true;
-        } else if (mode && !isAdaptiveMode()) {
+        } else if (!mode && !isAdaptiveMode()) {
             this.mode = MODE_ADAPTIVE;
         }
     }
