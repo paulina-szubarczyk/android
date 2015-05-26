@@ -82,6 +82,20 @@ public class TextUpdater {
         future = threadPoolExecutor.submit(rnbl);
     }
 
+    public void setVisible(boolean visible) {
+        if(!visible) {
+            min.setVisibility(View.INVISIBLE);
+            min_cross.setVisibility(View.INVISIBLE);
+            max.setVisibility(View.INVISIBLE);
+            max_cross.setVisibility(View.INVISIBLE);
+        } else {
+            min.setVisibility(View.VISIBLE);
+            min_cross.setVisibility(View.VISIBLE);
+            max.setVisibility(View.VISIBLE);
+            max_cross.setVisibility(View.VISIBLE);
+        }
+    }
+
     public void setMin(TextView min) {
         this.min = min;
     }

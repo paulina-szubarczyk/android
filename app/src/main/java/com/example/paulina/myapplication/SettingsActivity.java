@@ -2,6 +2,7 @@ package com.example.paulina.myapplication;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -21,7 +22,7 @@ import android.text.TextUtils;
 import java.util.List;
 
 
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements Preference.OnPreferenceClickListener{
 
 
     @Override
@@ -49,18 +50,37 @@ public class SettingsActivity extends PreferenceActivity {
         getPreferenceScreen().addPreference(fakeHeader);
         addPreferencesFromResource(R.xml.pref_camera);
 
-        bindPreferenceSummaryToValue(getPreference(R.string.pallet_key));
-//        bindPreferenceSummaryToValue(getPreference(R.string.analyse_key));
-//
-//        bindPreferenceSummaryToValue(getPreference(R.string.rectangle_key));
-//        bindPreferenceSummaryToValue(getPreference(R.string.changeable_key));
-//        bindPreferenceSummaryToValue(getPreference(R.string.default_key));
-//        bindPreferenceSummaryToValue(getPreference(R.string.block_key));
-//
-//        bindPreferenceSummaryToValue(getPreference(R.string.cam1_key));
-//        bindPreferenceSummaryToValue(getPreference(R.string.cam1_key));
+        getPreference(R.string.pallet_key).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+
+                String stringValue = newValue.toString();
+
+                ListPreference listPreference = (ListPreference) preference;
+                int index = listPreference.findIndexOfValue(stringValue);
+
+                preference.setSummary(index >= 0 ? listPreference.getEntries()[index] : null);
+
+                return true;
+            }
+        });
+
+        getPreference(R.string.analyse_key).setOnPreferenceClickListener(this);
 
     }
+
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+
+        Intent intent = new Intent(preference.getContext(), GraphActivity.class);
+        intent.putExtra("gradient_x", getIntent().getFloatArrayExtra("gradient_x"));
+        intent.putExtra("gradient_y", getIntent().getFloatArrayExtra("gradient_y"));
+        intent.putExtra("gradient", getIntent().getFloatArrayExtra("gradient"));
+        intent.putExtra("histogram", getIntent().getByteArrayExtra("histogram"));
+        startActivity(intent);
+        return true;
+    }
+
     private Preference getPreference(int id){
         return findPreference(getResources().getString(id));
     }
@@ -89,46 +109,6 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
-
-            if (preference instanceof ListPreference) {
-                // For list preferences, look up the correct display value in
-                // the preference's 'entries' list.
-                ListPreference listPreference = (ListPreference) preference;
-                int index = listPreference.findIndexOfValue(stringValue);
-
-                // Set the summary to reflect the new value.
-                preference.setSummary(
-                        index >= 0
-                                ? listPreference.getEntries()[index]
-                                : null);
-
-            } else {
-                // For all other preferences, set the summary to the value's
-                // simple string representation.
-                preference.setSummary(stringValue);
-            }
-            return true;
-        }
-    };
-
-
-    private static void bindPreferenceSummaryToValue(Preference preference) {
-        // Set the listener to watch for value changes.
-        preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-
-        // Trigger the listener immediately with the preference's
-        // current value.
-        sBindPreferenceSummaryToValueListener.onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
-    }
-
-
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class PalletPreferenceFragment extends PreferenceFragment {
@@ -136,9 +116,6 @@ public class SettingsActivity extends PreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_pallet);
-
-            bindPreferenceSummaryToValue(findPreference("pallet"));
-            bindPreferenceSummaryToValue(findPreference("analyze"));
         }
     }
 
@@ -147,13 +124,6 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-
-            addPreferencesFromResource(R.xml.pref_measure);
-            bindPreferenceSummaryToValue(findPreference("rectangle"));
-            bindPreferenceSummaryToValue(findPreference("changeable"));
-            bindPreferenceSummaryToValue(findPreference("default"));
-            bindPreferenceSummaryToValue(findPreference("block_scale"));
-
         }
     }
 
@@ -162,9 +132,6 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_camera);
-            bindPreferenceSummaryToValue(findPreference("cam"));
-            bindPreferenceSummaryToValue(findPreference("cam2"));
         }
     }
 }

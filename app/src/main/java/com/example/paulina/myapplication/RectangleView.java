@@ -40,10 +40,18 @@ public class RectangleView extends View {
         public MRect(RectangleView view)
         {
             this.view = view;
+            init(false);
+        }
+
+        public void init(boolean reset) {
             rectangle = new RectF(100,100,300,300);
             scaleX = scaleY = scale_amount = 0.5;
             width = 480;
             height = 650;
+            if(reset) {
+                setChanged();
+                notifyObservers();
+            }
         }
         public void recalculate() {
 
@@ -193,11 +201,6 @@ public class RectangleView extends View {
 //        System.out.println("DRAW!!");
         canvas.drawRect(rectangle.getRectangle().left, rectangle.getRectangle().top,
                 rectangle.getRectangle().right, rectangle.getRectangle().bottom, paint);
-//        cursor.layout((int) rectangle.getRectangle().centerX() - cursor.getWidth()/2, (int) rectangle.getRectangle().centerY() - cursor.getHeight()/2,
- //               (int) rectangle.getRectangle().centerX() + cursor.getWidth()/2, (int) rectangle.getRectangle().centerY() + cursor.getHeight()/2);
-
-//        cursor.bringToFront();
- //       cursor.invalidate();
     }
 
     public void visibilityStatus() {
@@ -312,7 +315,7 @@ public class RectangleView extends View {
 
     public void setToDefault(boolean val){
         if(val) {
-            rectangle = new MRect(this);
+            rectangle.init(true);
         }
     }
     enum State {

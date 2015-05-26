@@ -9,5 +9,8 @@
     <string name="rectangle">Rectangle</string>
     <string name="photo">Zapis obrazu</string>
     <string name="title_activity_therm_data">ThermApp</string>
+    <string name="title_activity_graph">GraphActivity</string>
+
+    <string name="hello_world">Hello world!</string>
 
 </resources>

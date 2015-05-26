@@ -56,4 +56,7 @@
     <string name="default_key">k7</string>
     <string name="block_key">k8</string>
 
+    <string name="gradient_x">gx</string>
+    <string name="gradient_y">gy</string>
+    <string name="gradient">g</string>
 </resources>

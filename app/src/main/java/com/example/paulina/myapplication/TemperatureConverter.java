@@ -3,8 +3,6 @@ package com.example.paulina.myapplication;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
-import android.preference.ListPreference;
-import android.preference.Preference;
 import android.util.Log;
 
 import org.opencv.android.Utils;
@@ -53,6 +51,9 @@ public class TemperatureConverter implements Observer  {
 
     private final Mat histogram = new Mat();
     private float gradient[];
+    private float gradient_x[];
+    private float gradient_y[];
+
     private final TemperatureRectangleData tempRectData = new TemperatureRectangleData();
     private Mat temperatureImg;
     private Context context;
@@ -102,7 +103,7 @@ public class TemperatureConverter implements Observer  {
         mat = mat.t();
 
         analyzeRectangle(mat);
-        analyzeGradient(mat);
+        calcGradients(mat);
 
         mat = this.scaleTemperatue(mat);
         mat = postprocess(mat);
@@ -139,12 +140,16 @@ public class TemperatureConverter implements Observer  {
         mat.convertTo(mat, CvType.CV_32FC1);
         Core.multiply(mat, new Scalar(1.0f / this.TEMPERATURE_SCALE), mat);
 
-        if(this.mode == this.MODE_ADAPTIVE ||this.TAKE_TEMPERATURE) {
+        if(this.TAKE_TEMPERATURE) {
             Core.MinMaxLocResult result = Core.minMaxLoc(mat);
             this.maxTemperature = maxTemp = (float)result.maxVal;
             this.minTemperature = minTemp = (float)result.minVal;
             this.TAKE_TEMPERATURE = false;
             this.mode = this.MODE_CONSTANT;
+        } else if (this.mode == this.MODE_ADAPTIVE) {
+            Core.MinMaxLocResult result = Core.minMaxLoc(mat);
+            this.maxTemperature = maxTemp = (float)result.maxVal;
+            this.minTemperature = minTemp = (float)result.minVal;
         }
 
         Core.subtract(mat, new Scalar(minTemp), mat);
@@ -214,28 +219,43 @@ public class TemperatureConverter implements Observer  {
         }
     }
 
-    private void analyzeGradient(Mat mat) {
+    private void calcGradients(Mat mat) {
+
+        if(Math.abs(lineX1 - lineX2) > Math.abs(lineY1 - lineY2)) {
+            int deltaY = Math.abs(lineY1 - lineY2);
+            gradient = analyzeGradient(mat, lineX1,lineY1,lineX1+deltaY,lineY2);
+        } else {
+            int deltaX = Math.abs(lineX1 - lineX2);
+            gradient =analyzeGradient(mat, lineX1,lineY1,lineX2,lineY1+deltaX);
+
+        }
+        gradient_x = analyzeGradient(mat,lineX1,lineY1,lineX1,lineY2);
+        gradient_y = analyzeGradient(mat,lineX1,lineY1,lineX2,lineY1);
+    }
+    private float[] analyzeGradient(Mat mat,int x1, int y1, int x2, int y2) {
 
         Mat floatMat = new Mat(mat.rows(), mat.cols(), CvType.CV_32FC1);
-        Core.multiply(floatMat, new Scalar(1 / this.TEMPERATURE_SCALE), floatMat);
+        Core.multiply(floatMat, new Scalar(1 / TEMPERATURE_SCALE), floatMat);
 
-        int xSpan = Math.abs(lineX1 - lineX2);
-        int ySpan = Math.abs(lineY1 - lineY2);
+        int xSpan = Math.abs(x1 - x2);
+        int ySpan = Math.abs(y1 - y2);
         int size = Math.max(xSpan, ySpan)-1;
-        gradient = new float[size];
+        if(size < 1)
+            return null;
 
-        int xStep = (int)Math.signum(lineX2 - lineX1);
-        int yStep = (int)Math.signum(lineY2 - lineY1);
+        float[] gradient = new float[size];
 
-        int lastX = lineX1;
-        int lastY = lineY1;
-        int currentX = lineX1 + xStep;
-        int currentY = lineY1 + yStep;
+        int xStep = (int)Math.signum(x2 - x1);
+        int yStep = (int)Math.signum(y2 - y1);
+
+        int lastX = x1;
+        int lastY = y1;
+        int currentX = x1 + xStep;
+        int currentY = y1 + yStep;
         int idx = 0;
         double stepLength = Math.sqrt(xStep*xStep + yStep*yStep);
-        while(currentX != lineX2 || currentY != lineY2 && idx < size) {
-
-            double grad = floatMat.get(currentY, currentX)[0] - floatMat.get(lastY, lastX)[0];
+        while((currentX != x2 || currentY != y2) && idx < size) {
+            double grad = (float)(floatMat.get(currentY, currentX)[0]) - (float)(floatMat.get(lastY, lastX)[0]);
             gradient[idx] = (float)(grad / stepLength);
             lastX = currentX;
             lastY = currentY;
@@ -243,6 +263,7 @@ public class TemperatureConverter implements Observer  {
             currentY += yStep;
             ++idx;
         }
+        return gradient;
     }
 
     Point estimateRelativeLocation(byte[] cameraBytes, int width, int height) {
@@ -299,6 +320,7 @@ public class TemperatureConverter implements Observer  {
         MatOfFloat ranges = new MatOfFloat(0, 256);
 
         Imgproc.calcHist(matList, channels, mask, histogram, histSize, ranges);
+        histogram.convertTo(histogram,CvType.CV_8UC1);
     }
 
     public ColorMap getColorMap() {
@@ -333,8 +355,8 @@ public class TemperatureConverter implements Observer  {
         return rectF;
     }
 
-    public int[] getHistogram() {
-        int[] hist = new int[histogram.rows() * histogram.cols()];
+    public byte[] getHistogram() {
+        byte[] hist = new byte[histogram.rows() * histogram.cols()];
         histogram.get(0, 0, hist);
         return hist;
     }
@@ -342,6 +364,14 @@ public class TemperatureConverter implements Observer  {
     public float[] getGradient() {
         return gradient;
     }
+    public float[] getGradientX() {
+        return gradient_x;
+    }
+
+    public float[] getGradientY() {
+        return gradient_y;
+    }
+
 
     @Override
     public void update(Observable observable, Object data) {
@@ -370,9 +400,9 @@ public class TemperatureConverter implements Observer  {
     }
 
     public void setAdaptiveMode(boolean mode) {
-        if (mode && isAdaptiveMode()) {
+        if (!mode && isAdaptiveMode()) {
             this.TAKE_TEMPERATURE = true;
-        } else if (!mode && !isAdaptiveMode()) {
+        } else if (mode && !isAdaptiveMode()) {
             this.mode = MODE_ADAPTIVE;
         }
     }

@@ -21,6 +21,8 @@ import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
 
+import java.util.ArrayList;
+
 import thermapp.sdk.ThermAppAPI;
 import thermapp.sdk.ThermAppAPI_Callback;
 
@@ -109,10 +111,10 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         
-        boolean camera = sharedPreferences.getBoolean(getResources().getString(R.string.cam1), false);
-        boolean camera_overlay = sharedPreferences.getBoolean(getResources().getString(R.string.cam2), false);
+        boolean camera = sharedPreferences.getBoolean(getResources().getString(R.string.cam1_key), false);
+        boolean camera_overlay = sharedPreferences.getBoolean(getResources().getString(R.string.cam2_key), false);
 
-        menageDeviceCamera(camera,camera_overlay);
+        menageDeviceCamera(camera, camera_overlay);
         
         temperature.setColorMap(ColorMap.fromString(
                 sharedPreferences.getString(getResources().getString(R.string.pallet_key), "")));
@@ -121,8 +123,9 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
         rectangleView.setChangeable(sharedPreferences.getBoolean(getResources().getString(R.string.changeable_key), false));
         rectangleView.setToDefault(sharedPreferences.getBoolean(getResources().getString(R.string.default_key), false));
         rectangleView.setVisible(sharedPreferences.getBoolean(getResources().getString(R.string.rectangle_key), false));
-        
+        max_minText.setVisible(sharedPreferences.getBoolean(getResources().getString(R.string.rectangle_key), false));
         legend.draw();
+
     }
 
     @Override
@@ -144,6 +147,12 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
                 return true;
             case R.id.action_settings:
                 Intent intent = new Intent(this,SettingsActivity.class);
+
+                intent.putExtra("gradient_x", temperature.getGradientX());
+                intent.putExtra("gradient_y", temperature.getGradientY());
+                intent.putExtra("gradient", temperature.getGradient());
+                intent.putExtra("histogram",temperature.getHistogram());
+
                 startActivity(intent);
             default:
                 return super.onOptionsItemSelected(item);
