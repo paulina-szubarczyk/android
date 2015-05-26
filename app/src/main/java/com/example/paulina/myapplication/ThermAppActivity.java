@@ -40,6 +40,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
     private Legend legend;
     private boolean TAKE_PHOTO;
     private  TextUpdater max_minText;
+    private Bitmap rectBitmap;
     enum VIEW_MODE {
         THERM_CAMERA,
         CAMERA,
@@ -149,7 +150,8 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
                 intent.putExtra("gradient_y", temperature.getGradientY());
                 intent.putExtra("gradient", temperature.getGradient());
                 intent.putExtra("histogram",temperature.getHistogram());
-
+//                ImageView img = (ImageView)findViewById(R.id.img);
+//                img.setImageBitmap(rectBitmap);
                 startActivity(intent);
             default:
                 return super.onOptionsItemSelected(item);
@@ -258,6 +260,7 @@ public class ThermAppActivity extends Activity implements ThermAppAPI_Callback {
             runOnUiThread(legend.rnbl);
         }
         mDrawer.post(bitmap);
+        rectBitmap = temperature.getRectangleBitmap();
         if(TAKE_PHOTO) {
 //            fileDumper.dumpScreen(ints, i, i1);
             fileDumper.takePicture(bitmap);

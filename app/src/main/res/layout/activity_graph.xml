@@ -38,7 +38,7 @@
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/imageView"
+        android:id="@+id/img"
         android:layout_gravity="right"
         android:layout_below="@+id/histogram"
         android:layout_alignParentRight="true"

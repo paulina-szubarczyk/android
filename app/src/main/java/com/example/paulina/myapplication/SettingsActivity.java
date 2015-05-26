@@ -77,6 +77,7 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
         intent.putExtra("gradient_y", getIntent().getFloatArrayExtra("gradient_y"));
         intent.putExtra("gradient", getIntent().getFloatArrayExtra("gradient"));
         intent.putExtra("histogram", getIntent().getByteArrayExtra("histogram"));
+
         startActivity(intent);
         return true;
     }

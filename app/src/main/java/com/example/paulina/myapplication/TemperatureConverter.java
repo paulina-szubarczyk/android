@@ -48,6 +48,7 @@ public class TemperatureConverter implements Observer  {
     private int lineY1;
     private int lineX2;
     private int lineY2;
+    private Mat roi;
 
     private final Mat histogram = new Mat();
     private float gradient[];
@@ -203,7 +204,7 @@ public class TemperatureConverter implements Observer  {
     }
 
     private void analyzeRectangle(Mat mat) {
-        Mat roi = mat.submat((int) rectF.left, (int) rectF.right, (int) rectF.top, (int) rectF.bottom);
+        roi = mat.submat((int) rectF.left, (int) rectF.right, (int) rectF.top, (int) rectF.bottom);
 
         Core.MinMaxLocResult result = Core.minMaxLoc(roi);
         if(Math.abs(tempRectData.tMax - result.maxVal/100) > 0.1) {
@@ -233,14 +234,10 @@ public class TemperatureConverter implements Observer  {
     }
     private float[] analyzeGradient(Mat mat,int x1, int y1, int x2, int y2) {
 
-        Mat floatMat = new Mat(mat.rows(), mat.cols(), CvType.CV_32FC1);
-        mat.convertTo(floatMat, CvType.CV_32FC1);
-        Core.multiply(floatMat, new Scalar(1 / TEMPERATURE_SCALE), floatMat);
-
         int xSpan = Math.abs(x1 - x2);
         int ySpan = Math.abs(y1 - y2);
         int size = Math.max(xSpan, ySpan)-1;
-        if(size < 1)
+        if(size < 1 )
             return null;
 
         float[] gradient = new float[size];
@@ -254,15 +251,19 @@ public class TemperatureConverter implements Observer  {
         int currentY = y1 + yStep;
         int idx = 0;
         double stepLength = Math.sqrt(xStep*xStep + yStep*yStep);
-        while((currentX != x2 || currentY != y2) && idx < size) {
-            double grad = (float)(floatMat.get(currentY, currentX)[0]) - (float)(floatMat.get(lastY, lastX)[0]);
+        System.out.println("(x1,y1), (x2,y2) (" + x1 + "," + y1 + "), (" + x2 + ", " + y2 + ")");
+        while((currentX != x2 || currentY != y2) && idx < size && currentX < 288 && currentY < 384) {
+            double grad = (float)(mat.get(currentY, currentX)[0]) - (float)(mat.get(lastY, lastX)[0]);
             gradient[idx] = (float)(grad / stepLength);
+            System.out.println("mat " + mat.get(currentY, currentX)[0] + " grad " + grad + " gradient " + gradient[idx] + " current (x,y) (" + currentX + "," + currentY + ")");
             lastX = currentX;
             lastY = currentY;
             currentX += xStep;
             currentY += yStep;
             ++idx;
         }
+        System.out.println("size " + size + "x,y step" + xStep + " " + yStep);
+
         return gradient;
     }
 
@@ -321,6 +322,11 @@ public class TemperatureConverter implements Observer  {
 
         Imgproc.calcHist(matList, channels, mask, histogram, histSize, ranges);
         histogram.convertTo(histogram,CvType.CV_8UC1);
+    }
+
+    public Bitmap getRectangleBitmap() {
+        roi.convertTo(roi,CvType.CV_8UC1);
+        return createBitmapInColorMap(roi);
     }
 
     public ColorMap getColorMap() {

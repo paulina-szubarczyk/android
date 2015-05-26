@@ -33,22 +33,19 @@ public class GraphActivity extends Activity {
         gx = (GraphView)findViewById(R.id.gradient_x);
         LineGraphSeries<DataPoint> series_x = new LineGraphSeries<>(generateData(gradient_x));
         gx.addSeries(series_x);
-        gz.setVisibility(View.INVISIBLE);
 
         gy = (GraphView)findViewById(R.id.gradient_y);
         LineGraphSeries<DataPoint> series_y = new LineGraphSeries<>(generateData(gradient_y));
         gy.addSeries(series_y);
-        gy.setVisibility(View.INVISIBLE);
 
         gz = (GraphView)findViewById(R.id.gradient_z);
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(generateData(gradient));
         gz.addSeries(series);
-        gz.setVisibility(View.INVISIBLE);
 
         gh = (GraphView)findViewById(R.id.histogram);
         BarGraphSeries<DataPoint> series_h = new BarGraphSeries<>(generateData(histogram));
         gh.addSeries(series_h);
-        gh.setVisibility(View.VISIBLE);
+
 
     }
 
